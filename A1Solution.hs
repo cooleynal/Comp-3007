@@ -1,4 +1,4 @@
-module A1 where -- DON"T TOUCH THIS LINE! 
+module A1 where -- DON"T TOUCH THIS LINE!
 
 --
 -- COMP 3007 Fall 2023
@@ -20,7 +20,7 @@ module A1 where -- DON"T TOUCH THIS LINE!
 -- The questions below ask you to write some simple Haskell functions. Part of
 -- the definition of each function is given. You need to replace the "undefined"
 -- part with a Haskell expression. Only replace "undefined"; don't change
--- anything else. 
+-- anything else.
 
 -- Here are some basic functions/features you might find useful.
 -- - Integer arithmetic operations: +, -, *
@@ -28,13 +28,13 @@ module A1 where -- DON"T TOUCH THIS LINE!
 -- - Integer comparison: ==, <, <=, <, >=
 -- - if-then-else: this is an expression, i.e. returns a value, e.g.
 --                     if 3 == 2 then 1 else 2
---                 is an expression with value 2 
+--                 is an expression with value 2
 -- - Pairing: (1,2) is the pair of 1 and 2; fst and snd get a pair's components
 --
 -- To see the type of a defined function, use the :type command in ghci. If the
 -- function is infix, you need to put parens around it. E.g.
 --     ghci> :type not
---     not :: Bool -> Bool 
+--     not :: Bool -> Bool
 --     ghci> :type (&&)
 --     (&&) :: Bool -> Bool -> Bool
 -- Some types will have "type variables" with constraints. We'll cover types
@@ -43,12 +43,12 @@ module A1 where -- DON"T TOUCH THIS LINE!
 --     (+) :: Num b => b -> b -> b
 -- This means that + can takes arguments of any type b meeting the Num
 -- constraint, i.e. any type b that has arithmetic operators defined for it. In
--- Haskell, constraints like this are similar to Java interfaces.
+-- Haskell, constraints like this are similar to Java interfaces.1
 
 -- Question 1.
 -- p x is the square of x, plus x, plus 1
 p :: Int -> Int
-p x = 
+p x =
     {- SOLN -}
     x^2+x+1
     {- STUBWITH undefined -}
@@ -63,9 +63,9 @@ m x y =
 
 -- Question 3.
 -- Return any value you like, as long as it typechecks (i.e. it doesn't cause an
--- error when you load this file into ghci). 
+-- error when you load this file into ghci).
 d :: a -> (a,a)
-d x = 
+d x =
     {- SOLN -}
     (x,x)
     {- STUBWITH undefined -}
@@ -73,7 +73,7 @@ d x =
 -- Question 4.
 -- See Question 3.
 t :: a -> b -> c -> (a, (b,c))
-t x y z = 
+t x y z =
     {- SOLN -}
     (x,(y,z))
     {- STUBWITH undefined -}
@@ -81,7 +81,7 @@ t x y z =
 -- Question 5.
 -- See Question 3.
 l :: (a, (b,c)) -> c
-l p = 
+l p =
     {- SOLN -}
     snd (snd p)
     {- STUBWITH undefined -}
@@ -89,9 +89,9 @@ l p =
 -- Question 6.
 -- See Question 3.
 c :: a -> Int
-c x = 
+c x =
     {- SOLN -}
-    17 
+    17
     {- STUBWITH undefined -}
 
 
