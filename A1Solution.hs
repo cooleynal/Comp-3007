@@ -57,9 +57,7 @@ p x =
 -- nat_minus x y is x-y unless x-y is negative, in which case it returns 0
 m :: Int -> Int -> Int
 m x y =
-    {- SOLN -}
     if x>y then x-y else 0
-    {- STUBWITH undefined -}
 
 -- Question 3.
 -- Return any value you like, as long as it typechecks (i.e. it doesn't cause an
