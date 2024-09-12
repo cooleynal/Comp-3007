@@ -31,6 +31,7 @@ data Dict = Mt | Entry String String Dict
   deriving (Show)
 
 eg = Entry "Bingo" "Bongo" (Entry "Baz" "Ola" (Entry "Big" "Deal" Mt))
+eg1 = Entry "Bingo1" "Bongo1" (Entry "Baz1" "Ola1" (Entry "Big1" "Deal1" Mt))
 
 -- firstKey eg = "Bingo"
 firstKey :: Dict -> String -- firstKey is a function with Dict input and String output
@@ -47,68 +48,73 @@ removeFirst :: Dict -> Dict
 removeFirst Mt = Mt
 removeFirst (Entry _ _ point) = point
 
-
 -- stringify eg = "Bingo:Bongo,Baz:Ola,Big:Deal"
-isEmpty :: Dict -> Bool
-isEmpty Mt = True
-isEmpty _ = False
-
 stringify :: Dict -> String
 stringify Mt = ""
-stringify (Entry key value point) = key ++ ":" ++ value ++ if isEmpty point then "" else "," ++ stringify point
+stringify (Entry key value point) = key ++ ":" ++ value ++ check point
+    where
+        check Mt = ""
+        check r = "," ++ (stringify r)
 
 -- rev eg = Entry "Bongo" "Bingo" (Entry "Ola" "Baz" (Entry "Deal" "Big" Mt))
 rev :: Dict -> Dict
 rev Mt = Mt
-rev (Entry value key point) = Entry key value point
+rev (Entry key value point) = Entry value key (rev point)
+
 
 -- find "Baz" eg = "Ola"
--- find "Egaah" eg = ""
-find :: String -> Dict -> String -- find is a function with two inputs and String outpu
+-- -- find "Egaah" eg = ""
+find :: String -> Dict -> String
 find _ Mt = ""
-find key (Entry k v rest) | key == k  = v | otherwise = find key rest
+find target_key (Entry key value point)
+    | target_key == key = value
+    | otherwise = (find target_key point)
+
 
 -- Replace all occurrences (as a key or a value) of badWord by "###"
 -- censor "Ola" eg = Entry "Bingo" "Bongo" (Entry "Baz" "###"" (Entry "Big" "Deal" Mt))
 -- censor "Baz" (censor "Ola" eg) = Entry "Bingo" "Bongo" (Entry "###" "###"" (Entry "Big" "Deal" Mt))
 censor :: String -> Dict -> Dict
 censor _ Mt = Mt
-censor badWord (Entry key value rest) =
-  Entry (if key == badWord then "###" else key) (if value == badWord then "###" else value) (censor badWord rest)
+censor badWord (Entry key value point) = Entry
+    (if key == badWord then "###" else key)
+    (if value == badWord then "###" else value)
+    (censor badWord point)
+
 
 -- remove "Baz" eg = Entry "Bingo" "Bongo" (Entry "Big" "Deal" Mt)
 remove :: String -> Dict -> Dict
 remove _ Mt = Mt
-remove key (Entry k v rest) | key == k = remove key rest | otherwise = Entry k v (remove key rest)
+remove target_key (Entry key value point)
+    | target_key == key = remove target_key point
+    | otherwise = Entry key value
+    (remove target_key point)
+
 
 -- removeDoubles (Entry "Bingo" "Bongo" (Entry "Baz" "Ola" (Entry "Bingo" "Deal" Mt)))
 -- = Entry "Bingo" "Bongo" (Entry "Baz" "Ola" Mt)
 removeDoubles :: Dict -> Dict
-removeDoubles = rd []
-  where
-    rd :: [String] -> Dict -> Dict
-    rd _ Mt = Mt
-    rd seen (Entry key value rest)
-      | key `elem` seen = rd seen rest
-      | otherwise = Entry key value (rd (key : seen) rest)
+removeDoubles = collector [] where
+    collector :: [String] -> Dict -> Dict
+    collector _ Mt = Mt
+    collector seenKeys (Entry key value point)
+        | key `elem` seenKeys = (collector seenKeys point)
+        | otherwise = Entry key value (collector (key : seenKeys) point)
+
+
+d1 = Entry "Bingo" "Bongo" (Entry "Baz" "Ola" (Entry "Big" "Deal" Mt))
+d2 = Entry "Bingo1" "Bongo1" (Entry "Baz" "Ola1" (Entry "Big1" "Deal1" Mt))
+
 
 -- Specification:
 -- 1) for every key k and dictionaries d1 and d2,
 --    find k (combine d1 d2) = find k d1  -- if (find k d1) is not ""
 --    find k (combine d1 d2) = find k d2  -- otherwise
 -- 2) removeDoubles (combine d1 d2) = combine d1 d2
+
+-- find "Baz" (combine d1 d2)
+-- find "Big1" (combine d1 d2)
+-- removeDoubles (combine d1 d2)
 combine :: Dict -> Dict -> Dict
-combine d1 d2 = combine' d1 d2
-  where
-    find :: String -> Dict -> String
-    find _ Mt = ""
-    find key (Entry k v rest)
-      | key == k  = v
-      | otherwise = find key rest
-    combine' :: Dict -> Dict -> Dict
-    combine' Mt d2 = d2
-    combine' (Entry k v rest1) d2 =
-      let inD2 = find k d2
-      in if v /= ""
-         then Entry k v (combine' rest1 d2)
-         else Entry k inD2 (combine' rest1 d2)
+combine Mt d2 = d2
+combine (Entry key value rest) d2 = Entry key value (combine rest d2)

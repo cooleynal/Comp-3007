@@ -1,7 +1,9 @@
 module Main where
 
-factorial :: (Eq t, Num t) => t -> t
+-- Factorial function
+factorial :: Int -> Int
 factorial n = if n == 0 then 1 else n * factorial (n - 1)
+
 
 main = do putStrLn "What is 5! ?"
           x <- readLn
