@@ -25,7 +25,7 @@
 --  resubmit as many times as you like. The autograder will usually *not* give
 --  diagnostics, i.e. you won't be able to use it as a debugging tool.
 
--- Data type representing dictionaries. Ignore the "deriving" line; it's added
+-- Data type representing dictionaries. Ignore the "deriving" l1ine; it's added
 -- here to enable ghci to print out objects in this type.
 data Dict = Mt | Entry String String Dict
   deriving (Show)
