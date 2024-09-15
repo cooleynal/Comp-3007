@@ -36,10 +36,15 @@ fleet = AddCar car0 (AddCar car1 (AddCar car2 Empty))
 
 -- case car1 of Car colour price model -> Car (unBlue colour) price model
 
+chModel:: String -> String
+chModel x = "Cats"
+
 unBlue :: Colour -> Colour
 unBlue Blue = Red
 unBlue x = x
 
+chPrice :: Price -> Int -> Price
+chPrice (Price _) = Price
 
 -- Write a function size computing the number of cars in a fleet.
 size :: Fleet -> Int
@@ -71,8 +76,18 @@ hasModel (AddCar (Car _ _ model) fleet) target = (model == target)
 -- Write a function paint that applies a colour-changer (e.g. 2 above)
 -- to all cars in a fleet.
 
+-- paint fleet unBlue
 paint :: Fleet -> (Colour -> Colour) -> Fleet
 paint Empty cc = Empty
 paint (AddCar (Car colour price model) fleet) cc =
   AddCar (Car (cc colour) price model) (paint fleet cc)
 
+paint2 :: Fleet -> Fleet
+paint2 Empty = Empty
+paint2 (AddCar (Car colour price model) fleet) =
+  AddCar (Car (unBlue colour) price model) (paint2 fleet)
+
+paint3 :: Fleet -> Fleet
+paint3 Empty = Empty
+paint3 (AddCar (Car colour price model) fleet) =
+  AddCar (Car (unBlue colour) (chPrice price 20) (chModel model)) (paint3 fleet)

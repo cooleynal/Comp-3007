@@ -102,7 +102,9 @@ removeDoubles = collector [] where
         | otherwise = Entry key value (collector (key : seenKeys) point)
 
 
+d1 :: Dict
 d1 = Entry "Bingo" "Bongo" (Entry "Baz" "Ola" (Entry "Big" "Deal" Mt))
+d2 :: Dict
 d2 = Entry "Bingo1" "Bongo1" (Entry "Baz" "Ola" (Entry "Big1" "Deal1" Mt))
 
 
