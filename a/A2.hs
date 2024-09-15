@@ -103,7 +103,7 @@ removeDoubles = collector [] where
 
 
 d1 = Entry "Bingo" "Bongo" (Entry "Baz" "Ola" (Entry "Big" "Deal" Mt))
-d2 = Entry "Bingo1" "Bongo1" (Entry "Baz" "Ola1" (Entry "Big1" "Deal1" Mt))
+d2 = Entry "Bingo1" "Bongo1" (Entry "Baz" "Ola" (Entry "Big1" "Deal1" Mt))
 
 
 -- Specification:
@@ -115,6 +115,20 @@ d2 = Entry "Bingo1" "Bongo1" (Entry "Baz" "Ola1" (Entry "Big1" "Deal1" Mt))
 -- find "Baz" (combine d1 d2)
 -- find "Big1" (combine d1 d2)
 -- removeDoubles (combine d1 d2)
+
+-- combine :: Dict -> Dict -> Dict
+-- combine Mt d2 = d2
+-- combine (Entry key value rest) d2 =
+--   if find key d2 /= ""
+--   then combine rest d2
+--   else Entry key (if value == "" then find key d2 else value) (combine rest d2)
+
+
 combine :: Dict -> Dict -> Dict
 combine Mt d2 = d2
-combine (Entry key value rest) d2 = Entry key value (combine rest d2)
+combine (Entry key value point) d2 =
+    let combinedRest = combine point d2
+    in if find key d2 == "" then Entry key (if value == "" then find key d2 else value) combinedRest else combinedRest
+
+
+
