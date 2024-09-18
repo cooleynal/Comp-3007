@@ -193,7 +193,7 @@ runTransformer (DB rows) (AddRow newRow)
     | otherwise = DB (newRow : rows)
 
 
--- runTransformer db Sort
+-- runTransformer dbUnsorted Sort
 runTransformer (DB rows) Sort =
   DB (insertionSort rows)
 
@@ -206,6 +206,12 @@ sorted row (r:rs)
 insertionSort :: [[Int]] -> [[Int]]
 insertionSort [] = []
 insertionSort (x:xs) = sorted x (insertionSort xs)
+
+
+-- let dbm = runTransformer dbUnsorted Sort
+-- printDB dbm
+
+
 
 db :: DB
 db =
