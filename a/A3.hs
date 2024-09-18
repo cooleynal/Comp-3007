@@ -78,11 +78,28 @@ printDB (DB nss) =
 -- Two databases are "equivalent"  if every row in either of them is also in the
 -- other.
 -- equivDB db dbUnsorted
+
+
+contains :: Eq a => [a] -> a -> Bool
+contains [] _ = False
+contains (x:xs) item
+  | x == item = True
+  | otherwise = contains xs item
+
+-- Define the equivalence function
 equivDB :: DB -> DB -> Bool
 equivDB (DB rows1) (DB rows2) =
-    all (`elem` rows2) rows1 && all (`elem` rows1) rows2
+    all (contains rows2) rows1 && all (contains rows1) rows2
 
 
+-- equivDB :: DB -> DB -> Bool
+-- equivDB (DB rows1) (DB rows2) =
+--     all elem rows2 rows1 && all (`elem` rows1) rows2
+
+-- equivDB :: DB -> DB -> Bool
+-- equivDB (DB rows1) (DB rows2) =
+--     length rows1 == length rows2 &&
+--     all (`elem` rows2) rows1
 
 
 -- runQuery db q returns a string representing the result of running the query q
