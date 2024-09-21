@@ -116,11 +116,15 @@ runQuery :: DB -> Query -> String
 
 -- without key
 -- runQuery db (GetRow 2)
+-- runQuery (DB rows) (GetRow key) =
+--     case filter (\row -> head row == key) rows of
+--         [row] -> show (tail row)
+--         _     -> "nil"
+
 runQuery (DB rows) (GetRow key) =
     case filter (\row -> head row == key) rows of
-        [row] -> show (tail row)
+        [row] -> show (key : tail row)
         _     -> "nil"
-
 
 -- runQuery db CountRows
 runQuery (DB rows) CountRows =
