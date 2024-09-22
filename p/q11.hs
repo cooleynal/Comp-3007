@@ -121,7 +121,7 @@ instance S Int where
         else iterfun f (n-1) (f x)
 
 -- Define the "minus one" function for types in the class S. Use pTest to test
--- your function. Since you only have z, s and iterfun to work with in defining
+-- your function. Since you onl1y have z, s and iterfun to work with in defining
 -- p, it's not straightforward. You might consider using pairing ( (,), fst,
 -- snd).
 p :: S a => a -> a
