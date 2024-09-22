@@ -16,40 +16,6 @@ import Prelude
 
 
 
-{-
-
-GENERAL INSTRUCTIONS
-
-The test ends at 11:20 (except for PMC students).
-
-All the questions have equal weight.
-
-If the question doesn't specify what the result should be for certain inputs,
-then your function can do anything on those inputs, including failing to
-terminate.
-
-IMPORTANT: See the import statement above for functions you are allowed to use.
-
-A number of questions refer to the "digits" of a number. These are the usual
-decimal digits we use to write down integers. E.g. 3007 has digits 3, 0, 0, 7 in
-that order.
-
-The code will be autograded, but offline (i.e. after the quiz). Partial credit
-may be given for functions that work only on some of the inputs. Code that
-doesn't compile will be given zero. Use ghci to debug your code.
-
-If you get more than 100% on the quiz because of the extra credit questions, the
-extra marks will be added to your total quiz mark.
-
-As usual, don't change any of the existing code except for "undefined". You can
-define additional functions if you like.
-
-MOST IMPORTANT: Submit your file to Gradescope before the test ends!! You can
-submit as many times as you like, so to be safe, submit something near the end
-before your final copy.
-
--
--}
 
 
 
@@ -93,15 +59,8 @@ reverseDigits n =
     else reverseDigits (div n 10) + lastDigit n * 10 ^ (numDigits n - 1)
 
 
--- END OF QUIZ
 --
--- EXTRA CREDIT QUESTION BELOW. Only attempt this if you've finished and
--- thoroughly tested the above. It's quite a bit more difficult.
-
--- This is a "type class" definition. You don't need to already know what this
--- is in order to do the question below. The definition can be read as "The type
--- class S is all those types where there are definitions of the functions z, s
--- and iterfun with the specified types.
+-- EXTRA
 class S a where
     z :: a
     s :: a -> a

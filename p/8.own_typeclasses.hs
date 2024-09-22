@@ -163,3 +163,9 @@ myReverse (x:xs) = myReverse xs ++ [x]
 
 factorial :: Int -> Int
 factorial n = if n == 0 then 1 else n * factorial (n - 1)
+
+fact :: (Ord a, Num a) => a -> a
+fact a
+  | a <= 1    = 1
+  | otherwise = a * fact (a - 1)
+

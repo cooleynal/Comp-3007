@@ -76,6 +76,8 @@ printDB (DB nss) =
 equivDB :: DB -> DB -> Bool
 equivDB (DB rows1) (DB rows2) =
     all (`elem` rows2) rows1 && all (`elem` rows1) rows2
+    -- all (\row -> row `elem` rows2) rows1 && all (\row -> row `elem` rows1) rows2
+
 
 -- contains :: Eq a => [a] -> a -> Bool
 -- contains [] _ = False
@@ -121,6 +123,8 @@ runQuery :: DB -> Query -> String
 --         [row] -> show (tail row)
 --         _     -> "nil"
 
+
+-- filter (> 2) [1, 2, 3, 4, 5]
 runQuery (DB rows) (GetRow key) =
     case filter (\row -> head row == key) rows of
         [row] -> show (key : tail row)
@@ -141,21 +145,32 @@ runQuery (DB rows) SumColumns =
 
 
 
--- runQuery db Validate
-runQuery (DB rows) Validate =
-  let
-    -- all rows are non-empty
-    nonEmpty = not (any null rows)
+-- -- runQuery db Validate
+-- runQuery (DB rows) Validate =
 
-    -- all rows have the same length
-    sameLength = all ((== length (head rows)) . length) rows
+-- -- all rows are non-empty
+--   let
+--     nonEmpty = not (any null rows)
 
-    -- all keys are unique
-    uniqueKeys = let keys = map head rows
-                 in length keys == length (filter (\k -> length (filter (== k) keys) == 1) keys)
+-- -- all rows have the same length
+--     sameLength = all ((== length (head rows)) . length) rows
 
-  in
-    show (nonEmpty && sameLength && uniqueKeys)
+-- -- all keys are unique
+--     uniqueKeys = let keys = map head rows
+--                  in length keys == length (filter (\k -> length (filter (== k) keys) == 1) keys)
+
+--   in
+--     show (nonEmpty && sameLength && uniqueKeys)
+
+
+
+runQuery (DB rows) Validate  =
+  let nonEmpty = not (any null rows)
+      sameLength = all ((== length (head rows)) . length) rows
+      keys = map head rows
+      uniqueKeys = let keys = map head rows
+        in length keys == length (filter (\k -> length (filter (== k) keys) == 1) keys)
+  in show (nonEmpty && sameLength && uniqueKeys)
 
 
 

@@ -1,6 +1,6 @@
-module Main where
+-- module Main where
 
-import Prelude hiding (tail)
+-- import Prelude hiding (tail)
 
 -- Define list examples
 list1 :: [Int]
