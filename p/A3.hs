@@ -41,30 +41,25 @@
 --
 -- A database db is "valid" if all rows are non-empty and have the same length,
 -- and no two rows have the same key. Each row can be thought of a key followed
--- by a list of "column values".
-
--- The example at the end of the file has four
+-- by a list of "column values". The example at the end of the file has four
 -- columns (since we don't count the keys as a column). In the row [4, 271,
 -- 2009, 2085, 1899], 4 is the key and 271, 2009, 2085, 1899 are the values for
 -- the first, second, third and fourth columns.
-
-
-
-
 data DB = DB [[Int]] deriving (Show)
 
--- data Query = GetRow Int | CountRows | Validate | SumColumns
---   deriving (Show)
+data Query = GetRow Int | CountRows | Validate | SumColumns
+  deriving (Show)
 
--- data Transformer = DeleteRow Int | AddRow [Int] | Sort
---   deriving (Show)
-
-
+data Transformer = DeleteRow Int | AddRow [Int] | Sort
+  deriving (Show)
 
 -- [Utility supplied for convenience in testing.]
 -- Print out a nice display of a database in ghci. You don't need to know how
 -- this works, but if you're interested, the result type IO() is the type of IO
 -- "actions". The ghci interpreter knows how to run these actions.
+
+
+-- printDB db
 printDB :: DB -> IO ()
 printDB (DB []) = putStrLn "Empty"
 printDB (DB nss) =
@@ -74,27 +69,24 @@ printDB (DB nss) =
    in mapM_ (putStrLn . prepRow) nss
 
 
-
 -- Two databases are "equivalent"  if every row in either of them is also in the
 -- other.
+
 -- equivDB db dbUnsorted
-
-
-contains :: Eq a => [a] -> a -> Bool
-contains [] _ = False
-contains (x:xs) item
-  | x == item = True
-  | otherwise = contains xs item
-
--- Define the equivalence function
 equivDB :: DB -> DB -> Bool
 equivDB (DB rows1) (DB rows2) =
-    all (contains rows2) rows1 && all (contains rows1) rows2
+    all (`elem` rows2) rows1 && all (`elem` rows1) rows2
 
+-- contains :: Eq a => [a] -> a -> Bool
+-- contains [] _ = False
+-- contains (x:xs) item
+--   | x == item = True
+--   | otherwise = contains xs item
 
 -- equivDB :: DB -> DB -> Bool
 -- equivDB (DB rows1) (DB rows2) =
---     all elem rows2 rows1 && all (`elem` rows1) rows2
+--     all (contains rows2) rows1 && all (contains rows1) rows2
+
 
 -- equivDB :: DB -> DB -> Bool
 -- equivDB (DB rows1) (DB rows2) =
@@ -114,83 +106,64 @@ equivDB (DB rows1) (DB rows2) =
 -- representation of the value.
 
 
-data Query = GetRow Int | CountRows | Validate | SumColumns
-  deriving (Show)
-
-
-
-    -- runQuery db (GetRow 1)
--- runQuery :: DB -> (Query -> String) -> Query -> String
 runQuery :: DB -> Query -> String
-runQuery db (GetRow key) =
-    maybe "Not Found" show (getRow key db)
+-- with key
 
-    -- runQuery db CountRows
-runQuery db CountRows =
-    show (countRows db)
+-- runQuery (DB rows) (GetRow key) =
+--     case filter (\row -> head row == key) rows of
+--         [row] -> show row
+--         _     -> "nil"
 
-    -- runQuery db SumColumns
-runQuery db SumColumns =
-    let sums = sumValuesAfterFirst db
-    in show sums
+-- without key
+-- runQuery db (GetRow 2)
+-- runQuery (DB rows) (GetRow key) =
+--     case filter (\row -> head row == key) rows of
+--         [row] -> show (tail row)
+--         _     -> "nil"
 
-    -- runQuery db Validate
-runQuery db Validate =
-    show (validate db)
+-- runQuer db (GetRow 2)
+runQuery (DB rows) (GetRow key) =
+    case filter (\row -> head row == key) rows of
+        [row] -> show (key : tail row)
+        _     -> "nil"
 
+-- runQuery db CountRows
+runQuery (DB rows) CountRows =
+    show (length rows)
 
-
-getRow :: Int -> DB -> Maybe [Int]
-getRow _ (DB []) = Nothing
-getRow key (DB (row:rows))
-    | head row == key = Just row
-    | otherwise       = getRow key (DB rows)
-
--- countRows db
-countRows :: DB -> Int
-countRows (DB rows) = length rows
-
---
--- validate db
-validate :: DB -> Bool
-validate db =
-    not (hasEmpty db) &&
-    sameLength db &&
-    not (hasDuplicateKeys db)
+-- runQuery db SumColumns
+runQuery (DB rows) SumColumns =
+  -- number of columns by inspecting the first row
+  let numCols = length (tail (head rows))
+      -- sum the nth column of each row
+      sumCol n = sum [row !! n | row <- rows]
+      -- generate list of sums for each column
+  in show [sumCol i | i <- [1..numCols]]
 
 
-    -- sameLength db
-sameLength :: DB -> Bool
-sameLength (DB rows) =
-    not (null rows) &&
-    all ((== length (head rows)) . length) rows
+
+-- runQuery db Validate
+runQuery (DB rows) Validate =
+  let
+    -- all rows are non-empty
+    nonEmpty = not (any null rows)
+
+    -- all rows have the same length
+    sameLength = all ((== length (head rows)) . length) rows
+
+    -- all keys are unique
+    uniqueKeys = let keys = map head rows
+                 in length keys == length (filter (\k -> length (filter (== k) keys) == 1) keys)
+
+  in
+    show (nonEmpty && sameLength && uniqueKeys)
 
 
-    -- hasDuplicateKeys db
-hasDuplicateKeys :: DB -> Bool
-hasDuplicateKeys (DB rows) =
-    let keys = map head rows
-    in hasDuplicate keys
-    where
-    hasDuplicate [] = False
-    hasDuplicate (x:xs) = x `elem` xs || hasDuplicate xs
 
--- hasEmpty db
-hasEmpty :: DB -> Bool
-hasEmpty (DB rows) = any null rows
---
+-----------------------------------------------------------------------------------------------
 
-sumValuesAfterFirst :: DB -> Int
-sumValuesAfterFirst (DB rows) =
-    sum (map sumAfterFirst rows)
-  where
-    sumAfterFirst row
-        | length row > 1 = sum (tail row)
-        | otherwise = 0
-
-
-data Transformer = DeleteRow Int | AddRow [Int] | Sort
-    deriving (Show)
+-- data Transformer = DeleteRow Int | AddRow [Int] | Sort
+-- deriving (Show)
 
 
 -- runTransform db t: "transform" the database db using the transformoer
@@ -203,55 +176,46 @@ data Transformer = DeleteRow Int | AddRow [Int] | Sort
 --
 -- Sort: reorder the rows in the database so that their keys are non-decreasing
 -- of keys.
--- runTransformer :: DB -> Transformer -> DB
--- runTransformer = undefined
 
-
-
--- Extract the list of rows from the DB
-unDB :: DB -> [[Int]]
-unDB (DB rows) = rows
-
--- Check if the database is valid
-isValidDB :: DB -> Bool
-isValidDB db = validate db
-
--- Sort the rows based on the key (first element of each row) using a simple sort function
-sortByKey :: [[Int]] -> [[Int]]
-sortByKey [] = []
-sortByKey (x:xs) =
-    let smallerSorted = sortByKey [a | a <- xs, head a <= head x]
-        biggerSorted = sortByKey [a | a <- xs, head a > head x]
-    in smallerSorted ++ [x] ++ biggerSorted
-
--- Custom delete row function
-deleteRow :: Int -> [[Int]] -> [[Int]]
-deleteRow _ [] = []
-deleteRow key (row:rows)
-    | head row == key = rows
-    | otherwise = row : deleteRow key rows
-
--- Apply a transformation to the database
 runTransformer :: DB -> Transformer -> DB
-runTransformer db (DeleteRow key) =
-    let updatedRows = deleteRow key (unDB db)
-    in DB updatedRows
 
-runTransformer db (AddRow newRow) =
-    let newDB = DB (newRow : unDB db)
-    in if isValidDB newDB then newDB else db
-
-runTransformer db Sort =
-    let sortedRows = sortByKey (unDB db)
-    in DB sortedRows
-
-
--- runTransformer db (AddRow [11, 271, 2009, 2085, 1899])
--- runTransformer db (AddRow [4, 271, 2009, 2085, 1899])
 -- runTransformer db (DeleteRow 5)
--- printDB db
+runTransformer (DB rows) (DeleteRow key) =
+    DB (filter (\row -> head row /= key) rows)
 
--- runTransformer dbUnsorted (Sort)
+-- let dbm = runTransformer db (DeleteRow 2)
+-- printDB dbm
+
+-- runTransformer db (AddRow [4, 1, 2009, 2085, 1899])
+runTransformer (DB rows) (AddRow newRow)
+    -- row empty
+    | null newRow = DB rows
+    -- candidate entry has same length of other rows
+    | length newRow /= length (head rows) = DB rows
+    -- key is unique
+    | head newRow `elem` map head rows = DB rows
+    -- new row add
+    | otherwise = DB (newRow : rows)
+
+
+-- runTransformer dbUnsorted Sort
+runTransformer (DB rows) Sort =
+  DB (insertionSort rows)
+
+sorted :: [Int] -> [[Int]] -> [[Int]]
+sorted row [] = [row]
+sorted row (r:rs)
+    | head row <= head r = row : r : rs
+    | otherwise = r : sorted row rs
+
+insertionSort :: [[Int]] -> [[Int]]
+insertionSort [] = []
+insertionSort (x:xs) = sorted x (insertionSort xs)
+
+
+-- let dbm = runTransformer dbUnsorted Sort
+-- printDB dbm
+
 
 
 db :: DB

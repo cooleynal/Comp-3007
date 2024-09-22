@@ -160,3 +160,6 @@ data List a = Empty | Cons a (List a) deriving (Show, Read, Eq, Ord)
 myReverse :: [a] -> [a]
 myReverse [] = []
 myReverse (x:xs) = myReverse xs ++ [x]
+
+factorial :: Int -> Int
+factorial n = if n == 0 then 1 else n * factorial (n - 1)
