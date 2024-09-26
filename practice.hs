@@ -11,16 +11,20 @@ import Data.Ord (comparing)
 -- > (!!) [1, 2, 3] 2
 -- 3
 -- ghci> mf = flip (!!) 1
--- map myFunc [[1, 2, 3], [4,5,6]]
+-- map mf [[1, 2, 3], [4,5,6]]
+
 -- ghci> mf [1, 2, 3, 4, 5]
 -- 2
 
 
-mf = flip (!!) 1
--- map mf [[1, 2, 3], [4,5,6]]
--- sum $ map mf
--- sum $ map mf [[1, 2, 3], [4,5,6]]
--- 7
+-- mf = flip (!!) 1
+-- mf1 = map mf [[1, 2, 3], [4,5,6]]
+
+-- sum $ mf1
+sumColumns :: [[Int]] -> [Int]
+sumColumns rows = foldr (zipWith (+)) (replicate (length (head rows)) 0) rows
+
+
 
 
 

@@ -1,7 +1,6 @@
 module List (List, cons, nil, zipWith, foldr) where
 
 import Prelude hiding (foldr, null, zipWith)
-import Prelude qualified as P (all, any, filter, foldr, head, map, tail, zipWith)
 
 data List a = Nil | Cons a (List a) deriving (Show)
 
