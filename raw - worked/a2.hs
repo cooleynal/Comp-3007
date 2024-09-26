@@ -80,13 +80,13 @@ censor s (Entry k v p) =
   Entry (if k == s then "###" else k) (if v == s then "###" else v) (censor s p)
 
 -- remove "Baz" eg = Entry "Bingo" "Bongo" (Entry "Big" "Deal" Mt)
-remove :: String -> Dict -> Dict
-remove x Mt = Mt
-remove s (Entry k v p) =
-  if s == k
-    then remove s p
-  else
-    Entry k v (remove s p)
+-- remove :: String -> Dict -> Dict
+-- remove x Mt = Mt
+-- remove s (Entry k v p) =
+--   if s == k
+--     then remove s p
+--   else
+--     Entry k v (remove s p)
 
 
 remove1 :: String -> Dict -> Dict
@@ -136,11 +136,21 @@ mpr ab (af : al)
 --   else myFunc2 (\x -> x == 2) xs
 
 
+remove :: String -> Dict -> Dict
+remove _ Mt = Mt
+remove s (Entry k v p)
+  | s == k    = p
+  | otherwise = Entry k v (remove s p)
+
 
 -- removeDoubles (Entry "Bingo" "Bongo" (Entry "Baz" "Ola" (Entry "Bingo" "Deal" Mt)))
 -- = Entry "Bingo" "Bongo" (Entry "Baz" "Ola" Mt)
 removeDoubles :: Dict -> Dict
-removeDoubles = undefined
+removeDoubles Mt = Mt
+removeDoubles (Entry k v p) =
+  Entry k v (remove k ( removeDoubles p))
+
+
 
 -- Specification:
 -- 1) for every key k and dictionaries d1 and d2,
@@ -148,4 +158,5 @@ removeDoubles = undefined
 --    find k (combine d1 d2) = find k d2  -- otherwise
 -- 2) removeDoubles (combine d1 d2) = combine d1 d2
 combine :: Dict -> Dict -> Dict
-combine = undefined
+combine (Entry k1 v1 p1) p2 =
+  Entry k1 v1 (remove k1 ( combine p1 p2))

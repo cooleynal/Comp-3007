@@ -1,3 +1,5 @@
+-- import Data.List (sort)
+
 -- Assignment 3 due  Sunday Sept 22 23:59
 --
 -- This assignment is intended to build some proficiency with
@@ -65,10 +67,14 @@ printDB (DB nss) =
       prepRow = concatMap (pad . show)
    in mapM_ (putStrLn . prepRow) nss
 
+
 -- Two databases are "equivalent"  if every row in either of them is also in the
 -- other.
+-- equivDB db dbUnsorted
 equivDB :: DB -> DB -> Bool
-equivDB = undefined
+equivDB (DB rows1) (DB rows2) =
+  all (`elem` rows1) rows2 && all (`elem` rows2) rows1
+
 
 -- runQuery db q returns a string representing the result of running the query q
 -- on the database db. It is assumed that the input database is valid.
@@ -80,8 +86,51 @@ equivDB = undefined
 --   Validate: True if db is valid, False otherwise
 -- In each of the above cases, use the function "show" to get the string
 -- representation of the value.
+
+
 runQuery :: DB -> Query -> String
-runQuery = undefined
+-- runQuery db (GetRow 2)
+runQuery (DB rows) (GetRow key) = show (rows !! key)
+
+-- runQuery db CountRows
+runQuery (DB rows) CountRows = show (length rows)
+
+-- runQuery db SumColumns
+-- runQuery (DB rows) SumColumns =
+--   let
+--     start = 0
+--     size = length rows !! start -- first row (or length (head rows))
+--     indices = [start .. size - 1]
+--   in
+--     map flip (!!) indices
+-- -- mf = flip (!!) 1
+-- -- sum (  map mf [[1, 2, 3], [4, 5, 6]])
+
+
+
+
+db1 :: [[Int]]
+db1 =
+  [[1, 2, 3],
+    [4, 5, 6]]
+
+-- myGeneratorFunc:: Int -> ([[Int]] -> Int)
+mf :: Int -> [[Int]] ->Int
+-- mf :: Num a => Int -> [[a]] -> a
+mf x xs = sum $ map (flip (!!) x) xs
+-- mf 1 db1
+
+-- mg x = sum . map (flip (!!) x)
+-- so = mg 1
+
+-- so db
+
+-- myGeneratorFunc x = sum . map (flip (!!) x)
+-- sumColumns = map myGeneratorFunc [1 .. length db]
+-- map ($ db) sumColumns
+
+
+
 
 -- runTransform db t: "transform" the database db using the transformoer
 -- operation t.
