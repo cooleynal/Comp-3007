@@ -5,7 +5,7 @@ import List
 -- attached means the hidden objects are not imported. This lets us use the same
 -- names for functions we define over our own List type.
 import Prelude hiding (all, concat, filter, foldr, length, map, replicate, tail, zipWith)
-
+-- import Debug.Trace (trace)
 -- DON'T TOUCH THE ABOVE! Make sure to delete any imports VSCode might add.
 ---------------------------------------------------------------------------
 
@@ -49,13 +49,6 @@ eg3 = cons        (cons 1 (cons 2 (cons 3 (cons 4 nil))))          -- First row
             nil))
 
 
-
--- eg3 = Cons (Cons 1 (Cons 2 (Cons 3 (Cons 4 Nil))))          -- First row
---       (Cons (Cons 5 (Cons 6 (Cons 7 (Cons 8 Nil))))       -- Second row
---       (Cons (Cons 9 (Cons 10 (Cons 11 (Cons 12 Nil))))    -- Third row
---       Nil))
-
-ml = [ [1,2,3], [1,1,1], [1,1,3] ]
 
 -- map (+1) eg
 map :: (a -> b) -> List a -> List b
@@ -133,8 +126,8 @@ replicate n x = cons x $ replicate (n - 1) x
 -- ordinary list notation:
 -- sumColumns [ [1,2,3], [1,1,1], [1,1,3] ] = [3, 4, 7]
 -- sumColumns 3 [ [1,2,3], [1,1,1], [1,1,3] ] = [3, 4, 7]
--- sumColumns 4 eg3
 
+-- sumColumns 4 eg3
 -- getRow :: Int  -> List (List a) -> List a
 -- getRow n l = foldr (\x acc ->  x `cons` acc) nil l
 
@@ -143,31 +136,7 @@ replicate n x = cons x $ replicate (n - 1) x
 -- -- sumColumns = undefined
 -- sumColumns n m = replicate 4 5
 
-
-
--- sumColumns :: Int -> List (List Int) -> List Int
--- sumColumns n rows = foldr sumColumn (replicate (length (getRow 0 rows)) 0) rows
---   where
---     sumColumn row acc = zipWith (+) (getColumn n row) acc
-
---     getColumn :: Int -> List Int -> List Int
---     getColumn n row = foldr getElement nil (zipWith (,) (generateIndices (length row)) row)
---       where
---         getElement (i, x) acc = if i == n then cons x acc else acc
-
---     getRow :: Int -> List (List Int) -> List Int
---     getRow n rows = foldr getNthRow nil (zipWith (,) (generateIndices (length rows)) rows)
---       where
---         getNthRow (i, r) acc = if i == n then r else acc
-
---     -- Generate indices as a List Int
---     generateIndices :: Int -> List Int
---     generateIndices m = generate m nil
---       where
---         generate 0 acc = acc
---         generate n acc = generate (n - 1) (cons (n - 1) acc)
-
-
+-- sumColumns 4 eg3
 sumColumns :: Int -> List (List Int) -> List Int
 sumColumns n rows = foldr sumColumn (replicate n 0) rows
   where
@@ -178,12 +147,43 @@ sumColumns n rows = foldr sumColumn (replicate n 0) rows
       where
         getElement (i, x) acc = if i < n then cons x acc else acc
 
-    -- Generate indices as a List Int
     generateIndices :: Int -> List Int
     generateIndices m = generate m nil
       where
         generate 0 acc = acc
         generate k acc = generate (k - 1) (cons (k - 1) acc)
+
+
+
+-- sumColumns :: Int -> List (List Int) -> List Int
+-- sumColumns n rows = foldr sumColumn (replicate n 0) rows
+--   where
+--     sumColumn row acc =
+--       let colValues = getColumn row
+--           newAcc = zipWith (+) colValues acc
+--       in trace ("Current row: " ++ show row ++
+--                 ", Column values: " ++ show colValues ++
+--                 ", New accumulator: " ++ show newAcc)
+--           newAcc
+
+--     getColumn :: List Int -> List Int
+--     getColumn row =
+--       let col = foldr getElement nil (zipWith (,) (generateIndices (length row)) row)
+--       in trace ("Column extracted: " ++ show col) col
+
+--     getElement (i, x) acc =
+--       if i < n
+--       then trace ("Adding element: " ++ show x ++ " at index: " ++ show i)
+--             (cons x acc)
+--       else acc
+
+--     -- Generate indices as a List Int
+--     generateIndices :: Int -> List Int
+--     generateIndices m = generate m nil
+--       where
+--         generate 0 acc = acc
+--         generate k acc = generate (k - 1) (cons (k - 1) acc)
+
 
 
 -- tail eg = Cons 2 (Cons 3 Nil)
