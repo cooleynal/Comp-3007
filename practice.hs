@@ -20,9 +20,82 @@ import Data.Ord (comparing)
 -- mf = flip (!!) 1
 -- mf1 = map mf [[1, 2, 3], [4,5,6]]
 
+
+
+
+-- List = 1:2:3:[]
+
+data Dict = Mt | Entry String String Dict
+  deriving (Show)
+
+eg = Entry "Bingo" "Bongo" (Entry "Baz" "Ola" (Entry "Big" "Deal" Mt))
+eg1 = Entry "Bingo1" "Bongo1" (Entry "Baz1" "Ola1" (Entry "Big1" "Deal1" (Entry "rrrBig1" "rrDeal1" Mt)))
+
+-- removeKey "str" eg
+-- removeKey :: String -> Dict -> Dict
+-- removeKey s Mt = Mt
+-- removeKey s (Entry k v p) = Entry k v (removeKey s p)
+
+
+-- removeKey :: String -> Dict -> Dict
+-- removeKey s Mt = Mt
+-- removeKey s (Entry k v p)
+--   |s == k = removeKey s p
+--   |s /= k = Entry k v (removeKey s p)
+
+-- removeKey :: String -> Dict -> Dict
+-- removeKey s Mt = Mt
+-- removeKey s (Entry k v p)
+--   |s == k = removeKey s p
+--   |otherwise = Entry k v (removeKey s p)
+
+
+
+rever :: Dict -> Dict
+rever Mt = Mt
+rever (Entry k v p) = Entry v k (rever p)
+
+-- reverseDict eg
+-- reverseDict :: Dict -> Dict
+-- reverseDict Mt = Mt
+-- reverseDict (Entry k v p) = Entry k v (reverseDict p)
+
+
+
+reverseDict :: Dict -> Dict
+reverseDict Mt = Mt
+reverseDict (Entry k v p) = append (Entry k v Mt) (reverseDict p)
+
+append :: Dict -> Dict -> Dict
+append Mt dict2 = dict2
+append (Entry k v p) dict2 = Entry k v (append p dict2)
+
+
+
+
+
+
+-- getsecond
+getsecond :: Dict -> Dict
+getsecond Mt = Mt
+-- getsecond Entry s1 s2 p = "_" s2 : getsecond s1 s2 p
+getsecond (Entry s1 s2 p) = Entry "s2" s1 (getsecond p)
+
+
+-- apd eg eg1
+apd :: Dict -> Dict -> Dict
+apd Mt (Entry k2 v2 p2) = Entry k2 v2 (apd Mt p2)
+apd Mt Mt = Mt
+apd (Entry k1 v1 p1) x = Entry k1 v1 (apd p1 x)
+
+
+
+
 -- sum $ mf1
 sumColumns :: [[Int]] -> [Int]
 sumColumns rows = foldr (zipWith (+)) (replicate (length (head rows)) 0) rows
+
+
 
 
 
@@ -41,6 +114,12 @@ myFunc f [] = []
 myFunc f (x: xs) = if f x
   then x : myFunc f xs
   else myFunc f xs
+
+
+
+
+
+
 
 
 

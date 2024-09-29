@@ -49,6 +49,10 @@ eg3 = cons        (cons 1 (cons 2 (cons 3 (cons 4 nil))))          -- First row
             nil))
 
 
+-- describe "map" $ do
+--   it "cons 2 (cons 3 (cons 4 nil))" $
+--   map (+1) eg `shouldBe` cons 2 (cons 3 (cons 4 nil))
+
 
 -- map (+1) eg
 map :: (a -> b) -> List a -> List b
@@ -67,6 +71,12 @@ isEven x = x `mod` 2 == 0
 -- filter isEven eg1
 filter :: (a -> Bool) -> List a -> List a
 filter f l = foldr (\x acc -> if f x then x `cons` acc else acc) nil l
+
+
+-- f1 isEven eg1
+f1 :: (a -> Bool) -> List a -> List a
+f1 f l = foldr event nil l
+  where event x acc = if f x then x `cons` acc else acc
 
 
 -- all isEven eg2
@@ -107,10 +117,20 @@ length l = foldr (\_ acc -> acc + 1) 0 l
 -- split p l: return a pair of lists lt and lf containing, respectively, the
 -- elements of l where p is true/false.
 -- split (== 2) eg = (Cons 2 Nil, Cons 1 (Cons 3 Nil))
+-- split :: (a -> Bool) -> List a -> (List a, List a)
+-- split p l = foldr (\x (lt, lf) -> if p x
+--                                 then (cons x lt, lf)
+--                                 else (lt, cons x lf)) (nil, nil) l
+
+
+
 split :: (a -> Bool) -> List a -> (List a, List a)
-split p l = foldr (\x (lt, lf) -> if p x
-                                then (cons x lt, lf)
-                                else (lt, cons x lf)) (nil, nil) l
+split p l = foldr splitter (nil, nil) l
+  where
+    splitter x (left, right)
+      | p x = (cons x left, right)
+      | otherwise = (left, cons x right)
+
 
 
 
@@ -137,52 +157,27 @@ replicate n x = cons x $ replicate (n - 1) x
 -- sumColumns n m = replicate 4 5
 
 -- sumColumns 4 eg3
-sumColumns :: Int -> List (List Int) -> List Int
-sumColumns n rows = foldr sumColumn (replicate n 0) rows
-  where
-    sumColumn row acc = zipWith (+) (getColumn row) acc
-
-    getColumn :: List Int -> List Int
-    getColumn row = foldr getElement nil (zipWith (,) (generateIndices (length row)) row)
-      where
-        getElement (i, x) acc = if i < n then cons x acc else acc
-
-    generateIndices :: Int -> List Int
-    generateIndices m = generate m nil
-      where
-        generate 0 acc = acc
-        generate k acc = generate (k - 1) (cons (k - 1) acc)
-
-
-
 -- sumColumns :: Int -> List (List Int) -> List Int
 -- sumColumns n rows = foldr sumColumn (replicate n 0) rows
 --   where
---     sumColumn row acc =
---       let colValues = getColumn row
---           newAcc = zipWith (+) colValues acc
---       in trace ("Current row: " ++ show row ++
---                 ", Column values: " ++ show colValues ++
---                 ", New accumulator: " ++ show newAcc)
---           newAcc
+--     sumColumn row acc = zipWith (+) (getColumn row) acc
 
 --     getColumn :: List Int -> List Int
---     getColumn row =
---       let col = foldr getElement nil (zipWith (,) (generateIndices (length row)) row)
---       in trace ("Column extracted: " ++ show col) col
+--     getColumn row = foldr getElement nil (zipWith (,) (generateIndices (length row)) row)
+--       where
+--         getElement (i, x) acc = if i < n then cons x acc else acc
 
---     getElement (i, x) acc =
---       if i < n
---       then trace ("Adding element: " ++ show x ++ " at index: " ++ show i)
---             (cons x acc)
---       else acc
-
---     -- Generate indices as a List Int
 --     generateIndices :: Int -> List Int
 --     generateIndices m = generate m nil
 --       where
 --         generate 0 acc = acc
 --         generate k acc = generate (k - 1) (cons (k - 1) acc)
+
+
+sumColumns :: Int -> List (List Int) -> List Int
+sumColumns n l = foldr sumer (replicate n 0) l
+  where
+    sumer row acc = zipWith (+) row acc
 
 
 
