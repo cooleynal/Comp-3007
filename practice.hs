@@ -28,8 +28,42 @@ import Data.Ord (comparing)
 data Dict = Mt | Entry String String Dict
   deriving (Show)
 
-eg = Entry "Bingo" "Bongo" (Entry "Baz" "Ola" (Entry "Big" "Deal" Mt))
-eg1 = Entry "Bingo1" "Bongo1" (Entry "Baz1" "Ola1" (Entry "Big1" "Deal1" (Entry "rrrBig1" "rrDeal1" Mt)))
+eg1 = Entry "Bingo" "Bongo" (Entry "Baz" "Ola" (Entry "Big" "Deal" Mt))
+eg2 = Entry "Bingo1" "Bongo1" (Entry "Baz" "Ola" (Entry "Big1" "Deal1" (Entry "rrrBig1" "rrDeal1" Mt)))
+
+
+apr :: Dict -> Dict -> Dict
+apr Mt m2 = m2
+apr (Entry k1 v1 p1) m2 = Entry k1 v1 (apr p1 m2)
+
+
+-- Entry "Bingo" "Bongo" rmd (Entry "Baz" "Ola" (Entry "Big" "Deal" Mt))
+
+-- Entry "Bingo" "Bongo" (Entry "Baz" "Ola" rmd (Entry "Big" "Deal" Mt))
+
+-- ghci> rmd (Entry "Bingo" "Bongo" (Entry "Baz" "Ola" (Entry "Bingo" "Deal" Mt)))
+
+
+rmdHelper :: String -> Dict -> Dict
+rmdHelper _ Mt = Mt
+rmdHelper s (Entry k v p)
+  | s == k = (rmdHelper s p)
+  | otherwise = Entry k v (rmdHelper s p)
+
+
+
+rmd :: Dict -> Dict
+rmd Mt = Mt
+rmd (Entry k v p) = Entry k v (rmd (rmdHelper k p))
+-- rmd (Entry k v p) = Entry k v (rmdHelper k (rmd p))
+
+
+
+
+
+
+
+
 
 -- removeKey "str" eg
 -- removeKey :: String -> Dict -> Dict
@@ -89,7 +123,21 @@ apd Mt Mt = Mt
 apd (Entry k1 v1 p1) x = Entry k1 v1 (apd p1 x)
 
 
-
+data DB = DB [[Int]] deriving (Show)
+db :: DB
+db =
+  DB
+    [ [1, 2075, 6, 1271, 1930]
+    , [2, 254, 239, 65, 571]
+    , [3, 1510, 301, 1570, 703]
+    , [4, 271, 2009, 2085, 1899]
+    , [5, 1974, 449, 1975, 580]
+    , [6, 1329, 1970, 1152, 608]
+    , [7, 2019, 724, 468, 953]
+    , [8, 1404, 2155, 1671, 324]
+    , [9, 1714, 1135, 738, 959]
+    , [10, 1223, 1398, 1466, 876]
+    ]
 
 -- sum $ mf1
 sumColumns :: [[Int]] -> [Int]
