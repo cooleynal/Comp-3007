@@ -109,7 +109,7 @@ deleteRow' dba [] _ _ = dba                                   -- when the dbr is
 deleteRow' dba (dbh : dbr) k v
   | Just v_row <- M.lookup k dbh, v_row == v = deleteRow' dba dbr k v
   -- | otherwise                = deleteRow' (dbh : dba) dbr k v -- append db head onto dbadder
-  | otherwise = deleteRow' (dba ++ [dbh]) dbr k v
+  | otherwise = deleteRow' (dbh : dba) dbr k v
 
 
 -- Get all rows whose primary key value is in the given set of strings.
