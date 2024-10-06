@@ -15,6 +15,16 @@ f :: Integer -> Integer
 f 0 = 1
 f n = n * f (n - 1)
 
+g :: Integer -> Float
+g n = fromIntegral (2* n^2 - n) /6
+
+results :: [Float]
+results = [g n | n <- [1..100]]
+
+r :: [Float]
+r = [n | n <- [1..100]]
+
+
   -- Do not change/delete any of the supplied code except for the lines with
 -- "undefined".
 
