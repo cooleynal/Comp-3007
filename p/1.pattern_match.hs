@@ -1,16 +1,48 @@
 
-
--- lucky :: (Integral a) => a -> String
--- lucky 7 = "LUCKY NUMBER SEVEN!"
--- lucky x = "Sorry, you're out of luck, pal!"
-
-
--- lucky 8
-lucky :: Int -> String
-lucky 7 = "LUCKY NUMBER SEVEN!"
-lucky x = "Sorry, you're out of luck, pal!"
+    -- guards
+-- doer 3 5
+doer :: Int -> Int -> Int
+doer x y
+        | z > y   =  1
+        | z == y  =  0
+        | z < y   =  -1
+      where z = x*x
 
 
+-- ltgt (-5)
+ltgt :: Int -> String
+ltgt x
+    | x < 0     = "Negative"
+    | x > 0     = "Positive"
+    | otherwise = "Zero"
+
+
+    -- if else if else
+-- ifefe 3 4
+ifefe :: Int -> Int -> Int
+ifefe x y =
+    let
+      z = x * x
+    in  -- Calculate z
+      if z > y
+        then 1
+      else if z == y
+        then 0
+      else
+        -1
+
+    -- case of
+-- caser 2
+caser :: Int -> String
+caser x = case x of
+             1 ->  "A"
+             2 ->  "B"
+             3 ->  "C"
+             _ ->  "Z"
+
+
+
+    -- base pattern match
 -- sayMe 5
 sayMe :: (Integral a) => a -> String
 sayMe 1 = "One!"
@@ -20,18 +52,28 @@ sayMe 4 = "Four!"
 sayMe 5 = "Five!"
 sayMe x = "Not between 1 and 5"
 
+
+
+
+
+
+-- clean up below
+
+
+
+
+
+
+
+
+
+
+
 -- factorial 5
 factorial :: (Integral a) => a -> a
 factorial 0 = 1
 factorial n = n * factorial (n - 1)
 
-
-
--- charName 'a'
-charName :: Char -> String
-charName 'a' = "Albert"
-charName 'b' = "Broseph"
-charName 'c' = "Cecil"
 
 
 -- addVectors (1, 2) (3, 4)

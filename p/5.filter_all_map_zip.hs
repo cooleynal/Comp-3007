@@ -1,4 +1,62 @@
 
+
+al :: [Int]
+al = [1, 2, 3, 4, 5]
+
+isGr :: Int -> [Int] -> Bool
+isGr _ [] = False
+isGr s l = all (>s) l
+
+
+main :: IO ()
+main = do
+    print $ isGr 0 al
+
+
+
+-- tf (-5)
+tf :: Integer -> Bool
+tf a
+  | a > 0     = True
+  | a < 0     = False
+  | otherwise = False
+
+
+pp:: [Integer] -> String
+pp [] = ""
+pp [f] = show f
+pp (f:l) = show f ++ " " ++ (pp l)
+
+
+
+-- anyer [1, 2, 3] 2
+-- True
+anyer :: [Int] -> Int -> Bool
+anyer [] _ = False
+anyer xs c = any (==c) xs -- returns true if any element is less than c
+
+
+-- aller [1, 2, 3] 2
+aller :: [Int] -> Int -> Bool
+aller [] _ = False
+aller xs c = all (< c) xs -- returns true if all elements satisfy condition
+
+-- maper [1, 2, 3] 2
+-- [3,4,5]
+maper :: [Int] -> Int -> [Int]
+maper [] _ = []
+maper xs c = map (+c) xs -- adds c to all elements
+
+-- filterer [1, 2, 3, 4, 5] 4
+-- [1,2,3]
+filterer :: [Int] -> Int -> [Int]
+filterer [] _ = []
+filterer xs c = filter (<c) xs -- returns the portion of the list satisfying the condition
+
+
+
+
+
 myList :: [Int]
 myList = [3, 5, 1, 7, 9, 2, 8, 4, 6, 0, 12, 15, 11, 10, 14, 13, 19, 18, 17, 16]
 
