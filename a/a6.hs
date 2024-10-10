@@ -109,10 +109,7 @@ parseEnd s = do
   return $ PR () ""
 
 isDigit :: Char -> Bool
-isDigit x = x `elem` "0123456789."
-
--- isDigit :: Char -> Bool
--- isDigit x = x `elem` "0123456789"
+isDigit x = x `elem` "0123456789"
 
 isLetter :: Char -> Bool
 isLetter c = c `elem` "abcdefghigklmnopqrstuvwxyz"
