@@ -224,7 +224,47 @@ sumColumns db = foldr sumer (replicate n 0) (map tail db)
 -- Sort: reorder the rows in the database so that their keys are non-decreasing
 -- of keys.
 runTransformer :: DB -> Transformer -> DB
-runTransformer = undefined
+runTransformer (DB db) (DeleteRow n) = DB (deleteRow db n)
+runTransformer (DB db) (AddRow newRow) = DB (addRow db newRow)
+runTransformer (DB db) Sort = DB $ sort db
+
+
+
+deleteRow :: [[Int]] -> Int -> [[Int]]
+deleteRow [] n = []
+deleteRow (x : xs) n
+  | n == head x = xs
+  | otherwise   = x : deleteRow xs n
+
+
+addRow :: [[Int]] -> [Int] -> [[Int]]
+addRow [] _ = []
+addRow db [_] = db
+addRow db a = sort $ db ++ [a]
+
+
+-- runQuery :: DB -> Query -> String
+-- runQuery (DB db) (GetRow n) = show $ getRow db n
+-- runQuery (DB db) CountRows = show $ countRows db
+-- runQuery (DB db) SumColumns = show $ sumColumns db
+-- runQuery (DB db) Validate = show $ isValid db
+
+
+
+
+sort :: [[Int]] -> [[Int]]
+sort [] = []
+sort (ns : nss) =
+  insert (sort nss) ns
+
+insert :: [[Int]] -> [Int] -> [[Int]]
+insert [] ns = [ns]
+insert (ns0 : nss) ns
+  | head ns <= head ns0 = ns : ns0 : nss
+  | otherwise = ns0 : insert nss ns
+
+
+
 
 db :: DB
 db =
@@ -276,3 +316,9 @@ main = do
 
   let r6 = allDifferent [1, 2, 3, 4, 5, 6, 11, 2]
   putStrLn $ "allDifferent [1, 2, 3, 4, 5, 6, 11, 2] " ++ show r6
+
+  let r7 = runTransformer db (DeleteRow 3)
+  putStrLn $ "runTransformer db (DeleteRow 3) " ++ show r7
+
+  let r8 = runTransformer db (AddRow [-12, 2, 3, 4, 5, 6, 11, 2])
+  putStrLn $ "runTransformer db (AddRow [22, 2, 3, 4, 5, 6, 11, 2]) " ++ show r8

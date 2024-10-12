@@ -154,10 +154,8 @@ addRow nss ns = nss
 deleteRow :: [[Int]] -> Int -> [[Int]]
 deleteRow [] n = []
 deleteRow (ns : nss) n
-  | n == head ns =
-      nss
-deleteRow (ns : nss) n =
-  ns : deleteRow nss n
+  | n == head ns = nss
+deleteRow (ns : nss) n = ns : deleteRow nss n
 
 sort :: [[Int]] -> [[Int]]
 sort [] = []
