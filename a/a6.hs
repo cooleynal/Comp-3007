@@ -240,8 +240,8 @@ main = do
     print r1
 
     putStrLn "Parsed cons:"
-    let testInput2 = "5.0"
-    let r2 = parseConst testInput2
+    let testInput2 = "1.4a"
+    let r2 = parseExp testInput2
     print r2
 
     -- runtime
