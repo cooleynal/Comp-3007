@@ -71,6 +71,7 @@ printDB (DB db) =
 
 
 -- all (`elem` [1, 2]) [1, 2, 3]
+-- elem 2 [1, 2, 3]
 
 -- does 1 2 3 exist in 1 2?
 -- all (\x -> elem x [1, 2]) [1, 2, 3]
@@ -90,16 +91,8 @@ equivDB (DB db1) (DB db2) = length db1 == length db2 && all in1 db1 && all in2 d
     in1 row = all (\x -> any (\subRow -> elem x subRow) db2) row
     in2 row = all (\x -> any (\subRow -> elem x subRow) db1) row
 
--- equivDB :: DB -> DB -> Bool
--- equivDB (DB db1) (DB db2) = all in2 db1
---   where in2 row = all (>3) row
 
 
--- agt (-33) db
--- agt :: Int -> DB -> Bool
--- agt threshold (DB rows) = all (all (> threshold) ) rows
-
--- alEleRows [1, 2, 3] [1, 2, 3]
 -- alEleRows :: [Int] -> [Int] -> Bool
 -- alEleRows row1 row2 = length row1 == length row2 && all (`elem` row2) row1
 
@@ -133,7 +126,7 @@ runQuery :: DB -> Query -> String
 runQuery (DB db) (GetRow n) = show $ getRow db n
 runQuery (DB db) CountRows = show $ countRows db
 runQuery (DB db) SumColumns = show $ sumColumns db
--- runQuery (DB db) Validate = show $ isValid db
+runQuery (DB db) Validate = show $ isValid db
 
 
 -- runQuery db (GetRow 1)
@@ -150,6 +143,37 @@ getRow m i =
 countRows :: [[Int]] -> Int
 countRows [] = 0
 countRows (x : xs) = 1 + countRows xs
+
+-- countRows :: [[Int]] -> Int
+-- countRows [] = 0
+-- countRows x = length x
+
+-- A database db is "valid" if all rows are non-empty and have the same length,
+-- and no two rows have the same key. Each row can be thought of a key followed
+
+
+
+-- isValid :: DB -> Bool
+-- isValid (x :xs) = all eqlen xs
+--   where eqlen row == length row
+
+
+
+isValid :: (Eq a) => [[a]] -> Bool
+isValid [] = True
+isValid (x:xs) = all eqlen xs && allDifferent (map head (x:xs))
+  where
+    eqlen row = length row == length x
+    allDifferent [] = True
+    allDifferent (y:ys) = notElem y ys && allDifferent ys
+
+
+allDifferent :: (Eq a) => [a] -> Bool
+allDifferent xs = not $ any duplicate xs
+  where
+    duplicate y = any (== y) (tail xs)
+
+
 
 
 transpose :: [[a]] -> [[a]]
@@ -171,8 +195,17 @@ sumColumns :: [[Int]] -> [Int]
 sumColumns [] = []
 sumColumns db = foldr sumer (replicate n 0) (map tail db)
   where
-    n = length (head db) - 1
+    n = length (head db) - 1 -- from right
     sumer row acc = zipWith (+) row acc
+
+
+-- sumColumns :: [[Int]] -> [Int]
+-- sumColumns [] = []
+-- sumColumns db = foldr sumer (replicate n 0) (map tail db)
+--   where
+--     n = length (head db) - 1
+--     sumer row acc = zipWith (+) row acc
+
   -- let
   --   start = [0, 0, 0, 0, 0]
 
@@ -228,5 +261,18 @@ main :: IO ()
 main = do
   let r1 = equivDB db dbUnsorted
   putStrLn $ "Are the databases equivalent? " ++ show r1
+
   let r2 = runQuery db CountRows
   putStrLn $ "runQuery db CountRows? " ++ show r2
+
+  let r3 = agt (-3) db
+  putStrLn $ "agt 2 db? " ++ show r3
+
+  let r4 = runQuery db SumColumns
+  putStrLn $ "runQuery db SumColumns? " ++ show r4
+
+  let r5 = runQuery db Validate
+  putStrLn $ "runQuery db Validate " ++ show r5
+
+  let r6 = allDifferent [1, 2, 3, 4, 5, 6, 11, 2]
+  putStrLn $ "allDifferent [1, 2, 3, 4, 5, 6, 11, 2] " ++ show r6

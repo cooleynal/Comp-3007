@@ -109,7 +109,7 @@ parseEnd s = do
   return $ PR () ""
 
 isDigit :: Char -> Bool
-isDigit x = x `elem` "0123456789"
+isDigit x = x `elem` "0123456789."
 
 isLetter :: Char -> Bool
 isLetter c = c `elem` "abcdefghigklmnopqrstuvwxyz"
@@ -167,6 +167,21 @@ parseConst str = do
     let numberString = intPart ++ "." ++ fracPart
     let number = read numberString :: Double
     return $ PR (Const number) restAfterFrac
+
+
+-- parseConst :: Parser Exp
+-- parseConst str = do
+--     PR intPart restAfterDigits <- parseDigits str
+--     case restAfterDigits of
+--         [] -> do
+--             let number = read intPart :: Double
+--             return $ PR (Const number) []  -- int to double
+--         ('.':restAfterDecimal) -> do
+--             PR fracPart restAfterFrac <- parseDigits restAfterDecimal
+--             let numberString = intPart ++ "." ++ fracPart
+--             let number = read numberString :: Double
+--             return $ PR (Const number) restAfterFrac
+--         _ -> fail "Expected a decimal point or end of input"
 
 parseVar :: Parser Exp
 parseVar str = do
@@ -238,11 +253,6 @@ main = do
     let testInput2 = "5"
     let r1 = parseConst testInput2
     print r1
-
-    putStrLn "Parsed cons:"
-    let testInput2 = "5.0"
-    let r2 = parseConst testInput2
-    print r2
 
     -- runtime
 

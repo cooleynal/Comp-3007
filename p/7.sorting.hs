@@ -59,12 +59,12 @@ sorter (x:xs) = sorter' xs [x]
     sorter' :: [Int] -> [Int] -> [Int]
     sorter' [] acc = acc
     sorter' (y:ys) acc = sorter' ys (insert y acc)
-
-    insert :: Int -> [Int] -> [Int]
-    insert y [] = [y]
-    insert y (z:zs)
-      | y <= z    = y : z : zs
-      | otherwise = z : insert y zs
+      where
+        insert :: Int -> [Int] -> [Int]
+        insert y [] = [y]
+        insert y (z:zs)
+          | y <= z    = y : z : zs
+          | otherwise = z : insert y zs
 
 
 main :: IO ()
