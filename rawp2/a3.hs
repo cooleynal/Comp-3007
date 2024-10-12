@@ -222,3 +222,11 @@ dbUnsorted =
     , [2, 254, 239, 65, 571]
     , [1, 2075, 6, 1271, 1930]
     ]
+
+
+main :: IO ()
+main = do
+  let r1 = equivDB db dbUnsorted
+  putStrLn $ "Are the databases equivalent? " ++ show r1
+  let r2 = runQuery db CountRows
+  putStrLn $ "runQuery db CountRows? " ++ show r2
