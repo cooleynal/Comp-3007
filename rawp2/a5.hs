@@ -24,7 +24,6 @@ find = M.findWithDefault ""
 -- A db may have a "primary key". This is just a distinguished column name.
 -- Functions needing to know the primary key will take the column name as an
 -- input.
--- A db is "valid" if all the rows have the same keys (according to M.keys).
 type DB = [Row]
 
 eg :: DB
@@ -36,18 +35,29 @@ eg =
   ]
 
 sameKeys :: Row -> Row -> Bool
-sameKeys = undefined
+sameKeys r1 r2 =
+  length (M.keys r1) == length (M.keys r2) &&
+  all (== True) (zipWith (==) (M.keys r1) (M.keys r2))
 
+
+-- A db is "valid" if all the rows have the same keys (according to M.keys).
 isValid :: DB -> Bool
-isValid = undefined
+isValid [] = True
+isValid (fr : rest) = all (sameKeys fr) rest
 
--- deletes the rwo whose primary key has the given value
+-- deletes the row whose primary key has the given value
 deleteRow :: DB -> String -> String -> DB
 deleteRow db primaryKey value = deleteRow' [] db primaryKey value
 
+
+-- printDB $ deleteRow eg "Id" "8901234"
 -- Must be tail recursive.
 deleteRow' :: DB -> DB -> String -> String -> DB
-deleteRow' = undefined
+deleteRow' dba [] _ _ = dba
+deleteRow' dba (dbh : dbr) k v
+  | Just v_row <- M.lookup k dbh, v_row == v = deleteRow' dba dbr k v
+  | otherwise = deleteRow' (dbh : dba) dbr k v
+
 
 -- Get all rows whose primary key value is in the given set of strings.
 getRows :: DB -> String -> [String] -> [Row]
@@ -55,7 +65,10 @@ getRows db primaryKey values = getRows' [] db primaryKey values
 
 -- Must be tail recursive.
 getRows' :: [Row] -> DB -> String -> [String] -> [Row]
-getRows' = undefined
+getRows' dba [] _ _ = reverse dba
+getRows' dba ( dbh : dbr) k vs
+  | Just v <- M.lookup k dbh, v `elem` vs = getRows' (dbh : dba) dbr k vs
+  | otherwise = getRows' dba dbr k vs
 
 -- return 1) the rows whose primary key value is in the given list of strings,
 -- and 2) the db with those rows removed.
@@ -64,4 +77,37 @@ extractRows db primaryKey values = extractRows' [] [] db primaryKey values
 
 -- Must be tail recursive.
 extractRows' :: [Row] -> DB -> DB -> String -> [String] -> ([Row], DB)
-extractRows' = undefined
+extractRows' rowa dba [] _ _ = (rowa, dba)
+extractRows' rowa dba (dbh:dbr) k ks
+  | Just v <- M.lookup k dbh, v `elem` ks = extractRows' (dbh : rowa) dba dbr k ks
+  | otherwise = extractRows' rowa (dbh : dba) dbr k ks
+
+
+main :: IO ()
+main = do
+
+  print $ isValid eg
+  print ""
+
+  print $ (deleteRow eg "Id" "8901234")
+
+  print $ getRows eg "Id" ["1234567", "8901234"]
+  -- print ""
+
+  print $ extractRows eg "Id" ["5678901", "8901234"]
+  -- print ""
+
+  -- print $ append eg eg1
+  -- print ""
+
+  -- print $ concat eg3
+  -- print ""
+
+  -- print $ length eg1
+  -- print ""
+
+  -- print $ sumColumns (length eg3) eg3
+  -- print ""
+
+  -- print $ tail eg3
+  -- print ""

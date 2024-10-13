@@ -242,7 +242,7 @@ main = do
 
     putStrLn "Parsed 11cons:"
     let testInput2 = "1.4a"
-    let r2 = parseVar "a"
+    let r2 = parseExp "a()"
     print r2
 
 
