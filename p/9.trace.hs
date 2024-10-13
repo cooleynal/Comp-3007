@@ -1,42 +1,10 @@
--- Assignment 6 Due Sunday Oct 13 23:59
-
--- You will need almost no Prelude functions to do this assignment. You would
--- find `elem` useful, and you will need `putStrLn` and `readFile`. You will
--- also need to know about the "case" statement, which is very similar to the
--- pattern matching you already know. This file also imports `trace`, which is
--- handy sometimes for debugging. Google for more info.
-
--- You'll be implementing a "parser". We define data types to represent the
--- expressions of a very simple programming language. A program is a list of
--- "definitions". Here is an example program:
---   f=plus(times(3.3,23.4),0.0)
---   g=x
---   h=f(f(g(x,y)),h(z) )
--- Each line is a *name*, followed by an "=", followed by an *expression*.
--- An expression is one of the following:
--- - a number with a decimal point
--- - a (function) name "applied" to one or two argument expressions that are
--- surrounded by parentheses and separated (when there are two arguments) by
--- commas.
--- - an "if" statement which is like the application case above except the
--- "function" name is "if" and there are three arguments.
--- - a name that is not applied as a function, i.e. it is not followed by "(".
---
--- A program cannot contain any blanks or tab characters. Each line must be a
--- single definition. A name can only contain lower case letters.
-
-
-
-
--- module A6 where
 import Debug.Trace (trace)
-import Prelude hiding (head, tail)
+import Prelude hiding (head)
 
--------------------------------------------------
--- Data types -----------------------------------
--------------------------------------------------
 
----- only lower case letters allowed
+
+
+
 type Name = String
 
 -- Expressions
@@ -147,14 +115,6 @@ parseName = collect isLetter
 parseDigits :: Parser String
 parseDigits = collect isDigit
 
-------------------------------------------------------------------------------
--- Code for you to write. All your parser definitions should start as shown,
--- i.e. with an argument (say `str`) for the string input to the parser, a
--- right-hand side that starts with `do`, and all the rest of the right-hand
--- side should be lines in the `do`.
-------------------------------------------------------------------------------
-
--- import A6
 
 parseExp :: Parser Exp
 parseExp = parseConst +++ parseVar +++ parseIf +++ parseApp1 +++ parseApp2
@@ -162,10 +122,13 @@ parseExp = parseConst +++ parseVar +++ parseIf +++ parseApp1 +++ parseApp2
 parseConst :: Parser Exp
 parseConst str = do
     PR intPart restAfterDigits <- parseDigits str
+    trace ("int: " ++ show intPart) $ return ()
     PR _ restAfterDecimal <- parseChar '.' restAfterDigits
     PR fracPart restAfterFrac <- parseDigits restAfterDecimal
+    trace ("PR fracPart restAfterFrac: " ++ show fracPart ++ " " ++ restAfterFrac) $ return ()
     let numberString = intPart ++ "." ++ fracPart
     let number = read numberString :: Double
+    trace ("Const number: " ++ show number) $ return ()
     return $ PR (Const number) restAfterFrac
 
 parseVar :: Parser Exp
@@ -188,13 +151,17 @@ parseIf str = do
     -- failIf (opName /= "if")
     PR _ rest2 <- parseChar '(' rest1
     PR cond rest3 <- parseExp rest2
-    -- trace ("if condition: " ++ show cond) $ return ()
+    trace ("if condition: " ++ show cond) $ return ()
     PR _ rest4 <- parseChar ',' rest3
     PR thenExp rest5 <- parseExp rest4
     PR _ rest6 <- parseChar ',' rest5
     PR elseExp rest7 <- parseExp rest6
     PR _ rest8 <- parseChar ')' rest7
     return $ PR (If cond thenExp elseExp) rest8
+
+
+
+
 
 
 parseApp2 :: Parser Exp
@@ -226,58 +193,16 @@ parseDef str = do
     parseEnd rest3
     return $ PR (Def name exp) rest3
 
+
+factorial :: Int -> Int
+factorial 0 = 1
+factorial n = trace ("factorial " ++ show n) (n * factorial (n - 1))
+
 main :: IO ()
 main = do
+    -- print (factorial 5)
 
-    let testInput = "if(stuff(x),y,z)"
-    let result = parseIf testInput
+    -- let testInput = "if(stuff(x),y,z)"
+    let result = parseConst "a"
     print result
     putStrLn ""
-
-
-    putStrLn "Parsed cons:"
-    let testInput2 = "5"
-    let r1 = parseConst testInput2
-    print r1
-
-    putStrLn "Parsed 11cons:"
-    let testInput2 = "1.4a"
-    let r2 = parseVar "a"
-    print r2
-
-
-    -- putStrLn "Parsed cons:"
-    -- let testInput2 = "1.4a"
-    -- let r3 = parseExp testInput2
-    -- print r3
-
-    -- runtime
-
-    putStrLn ""
-    contents <- readFile "program.txt"
-    putStrLn "Original contents:"
-    putStrLn contents
-
-    let linesOfFile = lines contents
-    let trimmedLines = map (filter (/= ' ')) linesOfFile
-
-    putStrLn "Trimmed and arrayed:"
-    print trimmedLines
-
-    putStrLn "Parsed definitions:"
-    putStrLn ""
-    processLines trimmedLines
-
-
-
-
-
-processLines :: [String] -> IO ()
-processLines [] = return ()
-processLines (line:lines) = do
-    putStrLn $ "Parsing line: " ++ line
-    case parseDef line of
-        Just (PR def _) -> do
-            putStrLn (show def)
-        Nothing -> putStrLn ("FAILED " ++ line)
-    processLines lines

@@ -199,18 +199,7 @@ sumColumns db = foldr sumer (replicate n 0) (map tail db)
     sumer row acc = zipWith (+) row acc
 
 
--- sumColumns :: [[Int]] -> [Int]
--- sumColumns [] = []
--- sumColumns db = foldr sumer (replicate n 0) (map tail db)
---   where
---     n = length (head db) - 1
---     sumer row acc = zipWith (+) row acc
 
-  -- let
-  --   start = [0, 0, 0, 0, 0]
-
-  -- in
-  --   start
 
 
 -- runTransform db t: "transform" the database db using the transformoer
@@ -241,14 +230,6 @@ addRow :: [[Int]] -> [Int] -> [[Int]]
 addRow [] _ = []
 addRow db [_] = db
 addRow db a = sort $ db ++ [a]
-
-
--- runQuery :: DB -> Query -> String
--- runQuery (DB db) (GetRow n) = show $ getRow db n
--- runQuery (DB db) CountRows = show $ countRows db
--- runQuery (DB db) SumColumns = show $ sumColumns db
--- runQuery (DB db) Validate = show $ isValid db
-
 
 
 
@@ -297,6 +278,12 @@ dbUnsorted =
     ]
 
 
+
+myFunc :: Num a => a -> a -> a
+myFunc x y = x + 3 * y
+
+
+
 main :: IO ()
 main = do
   let r1 = equivDB db dbUnsorted
@@ -322,3 +309,7 @@ main = do
 
   let r8 = runTransformer db (AddRow [-12, 2, 3, 4, 5, 6, 11, 2])
   putStrLn $ "runTransformer db (AddRow [22, 2, 3, 4, 5, 6, 11, 2]) " ++ show r8
+
+
+  let flippedFunc = flip myFunc
+  print (flippedFunc 5 10)

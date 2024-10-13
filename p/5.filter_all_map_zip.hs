@@ -56,6 +56,10 @@ filterer xs c = filter (<c) xs -- returns the portion of the list satisfying the
 -- all (`elem` [1, 2]) [1, 2, 3]
 -- elem 2 [1, 2, 3]
 
+isDouble :: Char -> Bool
+isDouble x = elem x "0123456789."
+
+
 
 
 myList :: [Int]

@@ -1,47 +1,46 @@
--- Import the List module. The module header specifies what objects are
--- exported.
+
 import List
--- Prelude is already imported, but importing it again with the "hiding" part
--- attached means the hidden objects are not imported. This lets us use the same
--- names for functions we define over our own List type.
 import Prelude hiding (all, concat, filter, foldr, length, map, replicate, tail, zipWith)
 
--- DON'T TOUCH THE ABOVE! Make sure to delete any imports VSCode might add.
----------------------------------------------------------------------------
-
-{-
-
-Assignment 4
-Due: Sunday Sept 29 23:59
-
-The assignment is a bunch of exercises using `foldr`. To deter you from using recursion, we're using our own definition of the list type. The type is treated abstractly, in the sense that the type name and some operations are imported from the module List (in the file List.hs) and only the imported things can be used. The imported objects are:
-
-- List       -- a data type of list with constructors Cons and Nil
-- cons, nil  -- alternate names for the constructors
-- zipWith    -- as in class, but redefined for our version of lists
-- foldr      -- as with zipWith
-
-These functions are all defined in List.hs. Note that the constructors `Cons` and `Nil` themselves are not in the list, so you can't do pattern-matching with them. However you can use `cons` and `nil` to build lists.
-
-It is not impossible to, in effect, break this abstraction, but please don't do that. You won't get much (if any) value out of the exercises if you do.
-
-All the functions needing implementation below are to be coded using foldr instead of recursion. Almost all the work is finding the right "op" and "z" to give as arguments to foldr.
-
--}
 
 -- The List version of [1,2,3] is Cons 1 (Cons 2 (Cons 3 Nil)).
 -- We need to use the functions cons and nil since the constructors Cons and Nil
 -- are not exported from the List module.
 eg = cons 1 (cons 2 (cons 3 nil))
 
-map :: (a -> b) -> List a -> List b
-map = undefined
 
--- all p xs: True iff p is true of every member of xs
+f :: Num a => a -> a
+f a = a + 1
+
+
+
+map :: (a -> b) -> List a -> List b
+-- function ele, initial value nil, a list l
+map f l = foldr fapply nil l
+-- x is current element in list, z is the accumulated result
+    where fapply ele acc = cons (f ele) acc
+
+
+
+
+fm :: (Ord a, Num a) => a -> a -> Bool
+fm c a
+    | a > c     = True
+    | otherwise = False
+
 
 filter :: (a -> Bool) -> List a -> List a
-filter = undefined
+filter f l = foldr fapply nil l
+  where
+    fapply ele acc
+      | f ele  = cons ele acc
+      | otherwise = acc
 
+
+
+
+
+-- all p xs: True iff p is true of every member of xs
 all :: (a -> Bool) -> List a -> Bool
 all = undefined
 
@@ -77,3 +76,18 @@ sumColumns = undefined
 -- it's suprisingly challenging to do with foldr.
 tail :: List a -> List a
 tail = undefined
+
+
+
+
+
+main :: IO ()
+main = do
+
+  let q1 = map f eg
+  print q1
+
+  print ""
+
+  let q2 = filter (fm 0) eg
+  print q2
