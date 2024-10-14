@@ -1,23 +1,14 @@
 import Prelude
-    (String
-    ,Int, (+), (-), (*),  (<)
-    ,(^)       -- integer exponentiation; 2^4 = 16
-    ,div, rem  -- integer division and remainder; div 11 3 = 3, rem 11 3 = 2
-    ,Bool(..), (==), (&&), (||), not
-    ,foldl1
-    ,fst, snd
-    ,undefined
+    ( String
+    , Int, (+), (-), (*), (<)
+    , Bool(..), (==), (&&), (||), not
+    , div, rem, foldl1, fst, snd, undefined, IO, putStrLn, show, (++)
+    , (^), ($)  -- Added ($) here
     )
-
 
 -- DON'T TOUCH THE ABOVE!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 --------------------------------------------------
-
-
-
-
-
 
 -- E.g. lastDigit 3007 = 7. n>=0.
 lastDigit :: Int -> Int
@@ -32,32 +23,32 @@ firstDigit n =
     else firstDigit (div n 10)
 
 -- fact n = n! = 1*2*...*n. n>=0.
--- For use in sumFact.
+fact :: Int -> Int
 fact n = foldl1 (*) [1..n]
 
--- For n>0,
--- sumFact n = 1! + 2! + ... + n!
+-- For n>0, sumFact n = 1! + 2! + ... + n!
+sumFact :: Int -> Int
 sumFact n =
     if n == 1 then 1
     else sumFact (n-1) + fact n
 
 -- If a,b >= 1 then (log a b) is the largest k such that a^k <= b.
--- For example, (log 3 11) = 2 since 3^2 = 9 <= 11 < 27 = 3^3
 log :: Int -> Int -> Int
 log a b =
-    if b<a then 0
+    if b < a then 0
     else 1 + log a (div b a)
 
 -- E.g. numDigits 3007 = 4. n>=0.
+numDigits :: Int -> Int
 numDigits n =
-    if n<10 then 1
+    if n < 10 then 1
     else 1 + numDigits (div n 10)
 
 -- E.g. reverseDigits 3007 = 7003. n>=0.
+reverseDigits :: Int -> Int
 reverseDigits n =
     if n < 10 then n
     else reverseDigits (div n 10) + lastDigit n * 10 ^ (numDigits n - 1)
-
 
 --
 -- EXTRA
@@ -92,4 +83,28 @@ p' x =
 
 pTest :: Int -> Bool
 pTest x =
-    x==0 || p x == x - 1
+    x == 0 || p x == x - 1
+
+main :: IO ()
+main = do
+
+    putStrLn $ "lastDigit 3007: " ++ show (lastDigit 3007)
+
+
+    putStrLn $ "firstDigit 3007: " ++ show (firstDigit 3007)
+
+    putStrLn $ "fact 5: " ++ show (fact 5)
+
+    putStrLn $ "sumFact 5: " ++ show (sumFact 5)
+
+    putStrLn $ "log 3 11: " ++ show (log 3 11)
+
+    putStrLn $ "numDigits 3007: " ++ show (numDigits 3007)
+
+    putStrLn $ "reverseDigits 3007: " ++ show (reverseDigits 3007)
+
+    putStrLn $ "p 5: " ++ show (p (5 :: Int))
+    putStrLn $ "p 0: " ++ show (p (0 :: Int))
+
+    putStrLn $ "pTest 5: " ++ show (pTest (5 :: Int))
+    putStrLn $ "pTest 0: " ++ show (pTest (0 :: Int))
