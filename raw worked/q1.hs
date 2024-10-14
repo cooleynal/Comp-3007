@@ -26,70 +26,31 @@ member x (Entry y _ d) | x == y = True
 member x (Entry _ _ d) = member x d
 
 
--- dict1 = Entry "a" "ab" (Entry "k" "ba" (Entry "b" "ka" (Entry "z" "ba" Mt)))
+dict = Entry "a" "ab" (Entry "k" "ba" (Entry "b" "ka" (Entry "z" "ba" Mt)))
+
+dicty = Entry "a1" "ab" (Entry "a2" "ba" (Entry "b" "ka" (Entry "z" "ba" Mt)))
 
 -- pre v d: a list of all keys in d whose corresponding value is v
 -- pre "ba" dict1
-
--- NEED TO CONCAT
--- pre :: String -> Dict -> String
--- pre _ Mt = ""
--- pre x (Entry k y d) = -- key value [string]
---   if x == y then k else (pre x d)
-
-pre :: String -> Dict -> String
-pre = undefined
+pre :: String -> Dict -> [String]
+pre _ Mt = []
+pre s (Entry k v p)
+  | s == v    = [k] ++ pre s p
+  | otherwise = pre s p
 
 
-
--- difference d1 d2: like d1, but remove any key (with its value) that is also
--- in d2
--- difference dict1 dict2
-difference :: Dict -> Dict -> Dict
-difference = undefined
-
+pre1 :: String -> Dict -> [String]
+pre1 _ Mt = []
+pre1 s (Entry k v p) = val ++ pre s p
+  where
+    val = if s == v then [k] else []
 
 
--- Like the GetRow query in A2
-select :: [[Int]] -> Int -> [Int]
-select (r : rows) n | head r == n = r
-select (_ : rows) n = select rows n
-select _ _ = []
-
--- Replace all negative integers by 0. Assume the DB is valid.
-unNeg :: DB -> DB
-unNeg = undefined
--- unNeg xs = filter (<0) xs
--- unNeg (x:xs) = unNeg xs
-
--- let rows = tail head rows
--- unNeg []
-  -- DB (filter (\row -> head row y) rows)
--- unNeg = undefined
-
--- Remove any rows that contain at least one negative value.  Assume the DB is valid.
-deNeg :: DB -> DB
-deNeg = undefined
-
-
-
--- intersect db1 db2: like db1, except discarding any rows whose key is not in
--- db2. I.e. discard (from db1) any row [x,...] where select x db2 = [].  Assume
--- the DBs are valid.
-intersect :: DB -> DB -> DB
-intersect = undefined
-
-
--- equivDB (DB rows1) (DB rows2) =
---     all (`elem` rows2) rows1 && all (`elem` rows1) rows2
-
------------------------
--- Examples for testing
------------------------
-
+dict1 :: Dict
 dict1 =
   Entry "a" "ab" (Entry "k" "ba" (Entry "b" "ka" (Entry "z" "ba" Mt)))
 
+dict2 :: Dict
 dict2 =
   Entry "a" "ab" (Entry "b" "ka" (Entry "u" "uu" Mt))
 
@@ -112,6 +73,87 @@ db2 =
     [9, 1714, 1135, 738, 959],
     [10, 1223, 1398, 1466, 876]
   ]
+
+
+-- difference d1 d2: like d1, but remove any key (with its value) that is also
+-- in d2
+difference :: Dict -> Dict -> Dict
+difference Mt _ = Mt
+difference _ Mt = Mt
+difference (Entry k1 v1 p1) d2
+  | member k1 d2   = difference p1 d2
+  | otherwise      = Entry k1 v1 (difference p1 d2)
+
+
+
+-- Like the GetRow query in A2
+select :: [[Int]] -> Int -> [Int]
+select (r : rows) n | head r == n = r
+select (_ : rows) n = select rows n
+select _ _ = []
+
+-- Replace all negative integers by 0. Assume the DB is valid.
+unNeg :: DB -> DB
+unNeg [] = []
+unNeg(row:rows) = unNeg1 row : unNeg rows
+  where
+    unNeg1 :: [Int] -> [Int]
+    unNeg1 [] = []
+    unNeg1 (x : xs)
+      | x < 0     = 0 : unNeg1 xs
+      | otherwise = x : unNeg1 xs
+
+-- Remove any rows that contain at least one negative value.  Assume the DB is valid.
+deNeg :: DB -> DB
+deNeg [] = []
+deNeg(row:rows)
+  | all (> 0) row   = row : deNeg rows
+  | otherwise       = deNeg rows
+
+
+-- intersect db1 db2: like db1, except discarding any rows whose key is not in
+-- db2. I.e. discard (from db1) any row [x,...] where select x db2 = [].  Assume
+-- the DBs are valid.
+intersect :: DB -> DB -> DB
+intersect [] _ = []
+intersect _ [] = []
+intersect (x : xl) d2
+  | member1 x d2 = x : intersect xl d2
+  | otherwise         =  intersect xl d2
+
+
+member1 :: [Int] -> DB -> Bool
+member1 _ [] = False
+member1 x (y:yl)
+  | x == y = True
+  | otherwise = member1 x yl
+
+
+main :: IO ()
+main = do
+
+  putStrLn "member"
+  print $ member "a" dict
+
+  putStrLn "pre "
+  print $ pre "ba" dict
+
+  putStrLn "pre1 "
+  print $ pre1 "ba" dict
+
+  putStrLn "diff "
+  print $ difference dict dicty
+
+  putStrLn "un "
+  print $ unNeg db1
+
+  putStrLn "deneg"
+  print $ deNeg db1
+
+  putStrLn "intersect"
+  print $ intersect db1 db1
+
+
 
 -----------------------
 -- Example input-output

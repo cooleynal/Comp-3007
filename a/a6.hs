@@ -256,9 +256,8 @@ main = do
     -- let r2 = parseExp "a("
     -- print r2
 
-    -- putStrLn "parseDef "
-    -- let r3 = parseDef "f = plus(times(3.3,23.4),0.0)"
-    -- printDefs r3
+    putStrLn "parseDef "
+    print $ parseDef "fff=g(3.3,ff(23.4,0.0))"
 
 
     -- putStrLn "Parsed cons:"
