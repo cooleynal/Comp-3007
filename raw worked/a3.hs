@@ -85,13 +85,16 @@ printDB (DB db) =
 
 -- printDB db
 -- equivDB db dbUnsorted
+-- equivDB :: DB -> DB -> Bool
+-- equivDB (DB db1) (DB db2) = length db1 == length db2 && all in1 db1 && all in2 db2
+--   where
+--     in1 row = all (\x -> any (\subRow -> elem x subRow) db2) row
+--     in2 row = all (\x -> any (\subRow -> elem x subRow) db1) row
+
 equivDB :: DB -> DB -> Bool
-equivDB (DB db1) (DB db2) = length db1 == length db2 && all in1 db1 && all in2 db2
-  where
-    in1 row = all (\x -> any (\subRow -> elem x subRow) db2) row
-    in2 row = all (\x -> any (\subRow -> elem x subRow) db1) row
-
-
+equivDB (DB lss1) (DB lss2) =
+  length lss1 == length lss2
+    && all (`elem` lss2) lss1 && all (`elem` lss1) lss2
 
 -- alEleRows :: [Int] -> [Int] -> Bool
 -- alEleRows row1 row2 = length row1 == length row2 && all (`elem` row2) row1

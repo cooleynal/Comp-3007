@@ -57,6 +57,14 @@ stringify Mt = ""
 stringify (Entry k v Mt)  = k ++ ":" ++ v
 stringify (Entry k v p)   = k ++ ":" ++ v ++ "," ++ stringify p
 
+-- stringify :: Dict -> String
+-- stringify Mt = ""
+-- stringify (Entry key value point) = key ++ ":" ++ value ++ check point
+--     where
+--         check Mt = ""
+--         check r = "," ++ (stringify r)
+
+
 
 -- rev eg = Entry "Bongo" "Bingo" (Entry "Ola" "Baz" (Entry "Deal" "Big" Mt))
 rev :: Dict -> Dict
@@ -96,6 +104,13 @@ find s (Entry k v p)
   | s == v = k
   | otherwise = find s p
 
+-- find :: String -> Dict -> String
+-- find _ Mt = ""
+-- find target_key (Entry key value point)
+--     | target_key == key = value
+--     | otherwise = (find target_key point)
+
+
 -- Replace all occurrences (as a key or a value) of badWord by "###"
 -- censor "Ola" eg = Entry "Bingo" "Bongo" (Entry "Baz" "###"" (Entry "Big" "Deal" Mt))
 -- censor "Baz" (censor "Ola" eg) = Entry "Bingo" "Bongo" (Entry "###" "###"" (Entry "Big" "Deal" Mt))
@@ -108,6 +123,13 @@ censor s (Entry k v p) = Entry (hider k) (hider v) (censor s p)
     hider candidate =
       if candidate == s then "###"
       else candidate
+
+
+-- censor :: String -> Dict -> Dict
+-- censor x Mt = Mt
+-- censor x (Entry k y d) =
+--   Entry (if k == x then "###" else k) (if y == x then "###" else y) (censor x d)
+
 
 
 censor1 :: String -> Dict -> Dict
@@ -127,11 +149,29 @@ remove s (Entry k v p)
   | otherwise         = Entry k v (remove s p)
 
 
+-- remove :: String -> Dict -> Dict
+-- remove x Mt = Mt
+-- remove x (Entry k y d) =
+--   if x == k
+--     then remove x d
+--     else Entry k y (remove x d)
+
+
 -- removeDoubles (Entry "Bingo" "Bongo" (Entry "Baz" "Ola" (Entry "Bingo" "Deal" Mt)))
 -- = Entry "Bingo" "Bongo" (Entry "Baz" "Ola" Mt)
 removeDoubles :: Dict -> Dict
 removeDoubles Mt = Mt
 removeDoubles (Entry k v p) = Entry k v (remove k (removeDoubles p))
+
+
+-- removeDoubles :: Dict -> Dict
+-- removeDoubles = collector [] where
+--     collector :: [String] -> Dict -> Dict
+--     collector _ Mt = Mt
+--     collector seenKeys (Entry key value point)
+--         | key `elem` seenKeys = (collector seenKeys point)
+--         | otherwise = Entry key value (collector (key : seenKeys) point)
+
 
 -- Specification:
 -- 1) for every key k and dictionaries d1 and d2,
@@ -150,6 +190,11 @@ combine Mt Mt = Mt
 combine Mt m2 = m2
 combine m1 Mt = m1
 combine (Entry k1 v1 p1) m2 = Entry k1 v1 (combine p1 m2)
+
+
+-- combine :: Dict -> Dict -> Dict
+-- combine Mt d2 = removeDoubles d2
+-- combine (Entry x y d1) d2 = Entry x y (remove x (combine d1 d2))
 
 
 findr :: String -> Dict -> Bool

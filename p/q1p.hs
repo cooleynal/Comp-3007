@@ -50,8 +50,7 @@ reverseDigits n =
     if n < 10 then n
     else reverseDigits (div n 10) + lastDigit n * 10 ^ (numDigits n - 1)
 
---
--- EXTRA
+
 class S a where
     z :: a
     s :: a -> a

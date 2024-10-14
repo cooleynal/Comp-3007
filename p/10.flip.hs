@@ -22,17 +22,9 @@ filter f l = foldr fapply nil l
 
 
 
-
-
-
-
-
-
 main :: IO ()
 main = do
-
-
-  print ""
+  putStrLn ""
 
   let q2 = filter (flip fm 1) eg
   print q2

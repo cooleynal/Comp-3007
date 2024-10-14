@@ -51,6 +51,16 @@ insertionSort (x:xs) = sorted x (insertionSort xs)
 --     sorter' (x:xs) acc = sorter' xs (insert x acc)
 
 
+-- Curried function to add two numbers
+add :: Int -> Int -> Int
+add x y = x + y
+
+-- Uncurried function to add two numbers
+addUncurried :: (Int, Int) -> Int
+addUncurried (x, y) = x + y
+
+
+
 
 sorter :: [Int] -> [Int]
 sorter [] = []
@@ -66,6 +76,18 @@ sorter (x:xs) = sorter' xs [x]
           | y <= z    = y : z : zs
           | otherwise = z : insert y zs
 
+-- Quicksort implementation
+quicksort :: (Ord a) => [a] -> [a]
+quicksort [] = []
+quicksort (x:xs) =
+    let smallerSorted = quicksort [a | a <- xs, a <= x]
+        biggerSorted = quicksort [a | a <- xs, a > x]
+    in  smallerSorted ++ [x] ++ biggerSorted
+
+
+
+(+++) :: Int -> Int -> Int
+x +++ y = x + 2 * y
 
 main :: IO ()
 main = do
@@ -76,3 +98,17 @@ main = do
   let rdm = [12, 67, 45, 23, 88, 1, 99, 76, 34, 50, 1 , 5, 8, 90]
   let s = sorter rdm
   putStrLn $ show rdm ++ "Sort: " ++ show s
+
+
+  -- Currying example
+  let addFive = add 5
+  print (addFive 10)               -- Outputs: 15
+
+  -- Uncurrying example
+  let tuple = (5, 10)
+  print (addUncurried tuple)        -- Outputs: 15
+
+  let a = 5
+      b = 3
+      result = a +++ b
+  putStrLn $ "Using the operator (+++): " ++ show a ++ " +++ " ++ show b ++ " = " ++ show result

@@ -25,169 +25,282 @@
 -- A program cannot contain any blanks or tab characters. Each line must be a
 -- single definition. A name can only contain lower case letters.
 
-import Debug.Trace (trace)
-import Prelude hiding (head, tail)
 
--------------------------------------------------
--- Data types -----------------------------------
--------------------------------------------------
 
----- only lower case letters allowed
-type Name = String
 
--- Expressions
-data Exp
-  = Const Double
-  | Var String
-  | If Exp Exp Exp
-  | App1 Name Exp
-  | App2 Name Exp Exp
-  deriving (Show, Eq)
+-- module A6 where
+  import Debug.Trace (trace)
+  import Prelude hiding (head, tail)
 
--- Definitions
-data Def
-  = Def Name Exp
-  deriving (Show, Eq)
+  -------------------------------------------------
+  -- Data types -----------------------------------
+  -------------------------------------------------
 
--- A "parser" takes a string, finds a prefix of it that corresponds to an
--- element of a, then, if successful, returns that element together with the
--- remainder of the string.
-type Parser a = String -> Maybe (PR a)
+  ---- only lower case letters allowed
+  type Name = String
 
--- parser result
-data PR a = PR a String
-  deriving (Show, Eq)
+  -- Expressions
+  data Exp
+    = Const Double
+    | Var String
+    | If Exp Exp Exp
+    | App1 Name Exp
+    | App2 Name Exp Exp
+    deriving (Show, Eq)
 
-reservedWords = words "if"
+  -- Definitions
+  data Def
+    = Def Name Exp
+    deriving (Show, Eq)
 
-----------------------------------------------------------------------
--- Some useful functions for using `do` with `Maybe`. READ CAREFULLY.
-----------------------------------------------------------------------
+  -- A "parser" takes a string, finds a prefix of it that corresponds to an
+  -- element of a, then, if successful, returns that element together with the
+  -- remainder of the string.
+  type Parser a = String -> Maybe (PR a)
 
-failed :: Maybe a -> Bool
-failed Nothing = True
-failed _ = False
+  -- parser result
+  data PR a = PR a String
+    deriving (Show, Eq)
 
-deJust :: [Maybe a] -> Maybe [a]
-deJust [] = Just []
-deJust (x : xs) = do
-  s <- x
-  ss <- deJust xs
-  return (s : ss)
+  reservedWords = words "if"
 
-failIf :: Bool -> Maybe ()
-failIf True = Nothing
-failIf False = Just ()
+  ----------------------------------------------------------------------
+  -- Some useful functions for using `do` with `Maybe`. READ CAREFULLY.
+  ----------------------------------------------------------------------
 
-failUnless :: Bool -> Maybe ()
-failUnless = failIf . not
+  failed :: Maybe a -> Bool
+  failed Nothing = True
+  failed _ = False
 
-headIs :: (a -> Bool) -> [a] -> Bool
-headIs p (c : l) | p c = True
-headIs _ _ = False
+  deJust :: [Maybe a] -> Maybe [a]
+  deJust [] = Just []
+  deJust (x : xs) = do
+    s <- x
+    ss <- deJust xs
+    return (s : ss)
 
----------------------------------------------------------------
--- Some provided parsing building blocks. READ CAREFULLY.
----------------------------------------------------------------
+  failIf :: Bool -> Maybe ()
+  failIf True = Nothing
+  failIf False = Just ()
 
--- Apply p1 to the tiven string. If it gives a result, return it, otherwise
--- return the rsult of apply p2.
-(+++) :: Parser a -> Parser a -> Parser a
-p1 +++ p2 =
-  \str -> case p1 str of
-    Nothing -> p2 str
-    Just val -> Just val
+  failUnless :: Bool -> Maybe ()
+  failUnless = failIf . not
 
--- Succeeds iff there is nothing left to parse.
-parseEnd :: Parser ()
-parseEnd s = do
-  failIf $ s /= ""
-  return $ PR () ""
+  headIs :: (a -> Bool) -> [a] -> Bool
+  headIs p (c : l) | p c = True
+  headIs _ _ = False
 
-isDigit :: Char -> Bool
-isDigit x = x `elem` "0123456789"
+  ---------------------------------------------------------------
+  -- Some provided parsing building blocks. READ CAREFULLY.
+  ---------------------------------------------------------------
 
-isLetter :: Char -> Bool
-isLetter c = c `elem` "abcdefghigklmnopqrstuvwxyz"
+  -- Apply p1 to the tiven string. If it gives a result, return it, otherwise
+  -- return the rsult of apply p2.
+  (+++) :: Parser a -> Parser a -> Parser a
+  p1 +++ p2 =
+    \str -> case p1 str of
+      Nothing -> p2 str
+      Just val -> Just val
 
--- Fail if the first character in the given string is not c, otherwise the
--- result is c and the rest of the string
-parseChar :: Char -> Parser Char
-parseChar c str = do
-  (c', rest) <- maybeCons str
-  failUnless $ c == c'
-  return $ PR c rest
+  -- Succeeds iff there is nothing left to parse.
+  parseEnd :: Parser ()
+  parseEnd s = do
+    failIf $ s /= ""
+    return $ PR () ""
 
-maybeCons :: [a] -> Maybe (a, [a])
-maybeCons (x : l) = Just (x, l)
-maybeCons _ = Nothing
+  isDigit :: Char -> Bool
+  isDigit x = x `elem` "0123456789"
 
--- collect p is a parser that returns the longest prefix of the given string
--- such that every character in it satisfies p. The result is the prefix and the
--- rest of the string.
-collect :: (Char -> Bool) -> Parser String
-collect p str = do
-  if headIs p str
-    then do
-      (c, rest) <- maybeCons str
-      PR collected rest' <- collect p rest
-      return $ PR (c : collected) rest'
-    else do
-      return $ PR [] str
+  isLetter :: Char -> Bool
+  isLetter c = c `elem` "abcdefghigklmnopqrstuvwxyz"
 
--- get the longest prefix of letters
-parseName :: Parser Name
-parseName = collect isLetter
+  -- Fail if the first character in the given string is not c, otherwise the
+  -- result is c and the rest of the string
+  parseChar :: Char -> Parser Char
+  parseChar c str = do
+    (c', rest) <- maybeCons str
+    failUnless $ c == c'
+    return $ PR c rest
 
--- get the longest prefix of digits
-parseDigits :: Parser String
-parseDigits = collect isDigit
+  maybeCons :: [a] -> Maybe (a, [a])
+  maybeCons (x : l) = Just (x, l)
+  maybeCons _ = Nothing
 
-------------------------------------------------------------------------------
--- Code for you to write. All your parser definitions should start as shown,
--- i.e. with an argument (say `str`) for the string input to the parser, a
--- right-hand side that starts with `do`, and all the rest of the right-hand
--- side should be lines in the `do`.
-------------------------------------------------------------------------------
+  -- collect p is a parser that returns the longest prefix of the given string
+  -- such that every character in it satisfies p. The result is the prefix and the
+  -- rest of the string.
+  collect :: (Char -> Bool) -> Parser String
+  collect p str = do
+    if headIs p str
+      then do
+        (c, rest) <- maybeCons str
+        PR collected rest' <- collect p rest
+        return $ PR (c : collected) rest'
+      else do
+        return $ PR [] str
 
-parseExp :: Parser Exp
-parseExp = parseConst +++ parseVar +++ parseIf +++ parseApp1 +++ parseApp2
+  -- get the longest prefix of letters
+  parseName :: Parser Name
+  parseName = collect isLetter
 
-parseConst :: Parser Exp
-parseConst str = do
-  undefined
+  -- get the longest prefix of digits
+  parseDigits :: Parser String
+  parseDigits = collect isDigit
 
-parseVar :: Parser Exp
-parseVar str = do
-  undefined
+  ------------------------------------------------------------------------------
+  -- Code for you to write. All your parser definitions should start as shown,
+  -- i.e. with an argument (say `str`) for the string input to the parser, a
+  -- right-hand side that starts with `do`, and all the rest of the right-hand
+  -- side should be lines in the `do`.
+  ------------------------------------------------------------------------------
 
-parseOpName :: Parser String
-parseOpName str = do
-  undefined
+  -- import A6
 
-parseIf :: Parser Exp
-parseIf str = do
-  undefined
+  parseExp :: Parser Exp
+  parseExp = parseConst +++ parseVar +++ parseIf +++ parseApp1 +++ parseApp2
 
-parseApp2 :: Parser Exp
-parseApp2 str = do
-  undefined
+  parseConst :: Parser Exp
+  parseConst str = do
+      PR intPart restAfterDigits <- parseDigits str
+      PR _ restAfterDecimal <- parseChar '.' restAfterDigits
+      PR fracPart restAfterFrac <- parseDigits restAfterDecimal
+      let numberString = intPart ++ "." ++ fracPart
+      let number = read numberString :: Double
+      return $ PR (Const number) restAfterFrac
 
-parseApp1 :: Parser Exp
-parseApp1 str = do
-  undefined
+  parseVar :: Parser Exp
+  parseVar str = do
+      PR name rest <- parseName str
+      failIf (headIs (== '(') rest)
+      return (PR (Var name) rest)
 
-parseDef :: Parser Def
-parseDef str = do
-  undefined
 
-printDefs :: [Def] -> IO ()
-printDefs [] = return ()
-printDefs (def : defs) = do
-  putStrLn (show def)
-  printDefs defs
+  parseOpName :: Parser String
+  parseOpName str = do
+      PR name rest <- parseName str
+      failIf (headIs (/= '(') rest)
+      return $ PR name rest
 
--- Read in a file named program.txt where each line is a string representing a
--- Def. Parse each line and use printDefs to printout the parsed Defs.
-main = do
-  undefined
+
+  parseIf :: Parser Exp
+  parseIf str = do
+      PR opName rest1 <- parseOpName str
+      -- failIf (opName /= "if")
+      PR _ rest2 <- parseChar '(' rest1
+      PR cond rest3 <- parseExp rest2
+      -- trace ("if condition: " ++ show cond) $ return ()
+      PR _ rest4 <- parseChar ',' rest3
+      PR thenExp rest5 <- parseExp rest4
+      PR _ rest6 <- parseChar ',' rest5
+      PR elseExp rest7 <- parseExp rest6
+      PR _ rest8 <- parseChar ')' rest7
+      return $ PR (If cond thenExp elseExp) rest8
+
+
+  parseApp2 :: Parser Exp
+  parseApp2 str = do
+      PR funcName rest1 <- parseOpName str
+      -- failIf (funcName == "if")
+      PR _ rest2 <- parseChar '(' rest1
+      PR arg1 rest3 <- parseExp rest2
+      PR _ rest4 <- parseChar ',' rest3
+      PR arg2 rest5 <- parseExp rest4
+      PR _ rest6 <- parseChar ')' rest5
+      return $ PR (App2 funcName arg1 arg2) rest6
+
+
+  parseApp1 :: Parser Exp
+  parseApp1 str = do
+      PR funcName rest1 <- parseName str
+      -- failIf (funcName == "if")
+      PR _ rest2 <- parseChar '(' rest1
+      PR arg rest3 <- parseExp rest2
+      PR _ rest4 <- parseChar ')' rest3
+      return $ PR (App1 funcName arg) rest4
+
+  parseDef :: Parser Def
+  parseDef str = do
+      PR name rest1 <- parseName str
+      PR _ rest2 <- parseChar '=' rest1
+      PR exp rest3 <- parseExp rest2
+      parseEnd rest3
+      return $ PR (Def name exp) rest3
+
+
+  printDefs :: [Def] -> IO ()
+  printDefs [] = return ()
+  printDefs (def : defs) = do
+    putStrLn (show def)
+    printDefs defs
+
+
+
+
+
+  main :: IO ()
+  main = do
+
+      -- let testInput = "if(stuff(x),y,z)"
+      -- let result = parseIf testInput
+      -- print result
+      -- putStrLn ""
+
+
+      -- putStrLn "Parsed cons:"
+      -- let testInput2 = "5"
+      -- let r1 = parseConst testInput2
+      -- print r1
+
+      -- putStrLn "Parsed 11cons:"
+      -- let testInput2 = "1.4a"
+      -- let r2 = parseExp "a("
+      -- print r2
+
+      putStrLn "parseDef "
+      print $ parseDef "fff=g(3.3,ff(23.4,0.0))"
+
+
+      -- putStrLn "Parsed cons:"
+      -- let testInput2 = "1.4a"
+      -- let r3 = parseExp testInput2
+      -- print r3
+
+      -- runtime
+
+      putStrLn ""
+      contents <- readFile "program.txt"
+      putStrLn "Original contents:"
+      putStrLn contents
+
+      let linesOfFile = lines contents
+      let trimmedLines = map (filter (/= ' ')) linesOfFile
+
+      putStrLn "Trimmed and arrayed:"
+      print trimmedLines
+
+      putStrLn "Parsed definitions:"
+      putStrLn ""
+      processLines trimmedLines
+
+
+
+  -- processLines :: [String] -> IO ()
+  -- processLines [] = return ()
+  -- processLines (line:lines) = do
+
+  --     putStrLn $ "Parsing line: " ++ line
+  --     case parseDef line of
+  --         Just (PR def _) -> do
+  --             putStrLn (show def)
+  --         Nothing -> putStrLn ("FAILED " ++ line)
+  --     processLines lines
+
+
+  processLines :: [String] -> IO ()
+  processLines [] = return ()
+  processLines (line:lines) = do
+      putStrLn $ "Parsing line: " ++ line
+      case parseDef line of
+          Just (PR def _) -> printDefs [def]  -- Pass the single Def as a list
+          Nothing         -> putStrLn ("FAILED to parse: " ++ line)
+      processLines lines

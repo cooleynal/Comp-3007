@@ -1,28 +1,8 @@
 
 import Data.Map qualified as M
 
--- stirling 15 8
--- stirling 55 2
-stirling :: Int -> Int -> Int
-stirling n 1 = 1
-stirling 0 0 = 1
-stirling n 0 = 0
-stirling n k
-  | n < k     = 0
-  | otherwise = stirling (n - 1) (k - 1) + k * stirling (n - 1) k
 
-f :: Integer -> Integer
-f 0 = 1
-f n = n * f (n - 1)
 
-g :: Integer -> Float
-g n = fromIntegral (2* n^2 - n) /6
-
-results :: [Float]
-results = [g n | n <- [1..100]]
-
-r :: [Float]
-r = [n | n <- [1..100]]
 
 
   -- Do not change/delete any of the supplied code except for the lines with

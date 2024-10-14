@@ -14,15 +14,6 @@ factTail a = helper a 1
     helper a acc = helper (a-1) (a * acc)
 
 
-
-stirling :: Int -> Int -> Int
-stirling n 1 = 1
-stirling 0 0 = 1
-stirling n 0 = 0
-stirling n k
-  | n < k     = 0
-  | otherwise = stirling (n - 1) (k - 1) + k * stirling (n - 1) k
-
 -- normal recursion
 -- fib 33
 fib :: Int -> Int
@@ -42,6 +33,16 @@ fibTail a = fibTail' a (0, 1)
     fibTail' n (a, b) = fibTail' (n - 1) (b, a + b)
 
 
+-- stirling 15 8
+-- stirling 55 2
+stirling :: Int -> Int -> Int
+stirling n 1 = 1
+stirling 0 0 = 1
+stirling n 0 = 0
+stirling n k
+  | n < k     = 0
+  | otherwise = stirling (n - 1) (k - 1) + k * stirling (n - 1) k
+
 
 
 
@@ -53,28 +54,6 @@ append :: [a] -> a -> [a]
 append [] y = [y]
 append (x : l) y = x : append l y
 
-
-
-main :: IO ()
-main = do
-  let result = listize "hello"
-  let r2 = append [1, 2, 3, 4] 5
-  print result
-  print r2
-
-  putStrLn $ "Factof 5: " ++ show (fact 5)
-  putStrLn $ "FactTail of 5: " ++ show (factTail 5)
-
-  putStrLn $ "Fibonacci of 5: " ++ show (fib 5)
-  putStrLn $ "Fibonacci of 5: " ++ show (fibTail 5)
-
-  putStrLn $ "stirling of n=7 k=3: " ++ show (stirling 7 3)
-
-
-
-
-
-----------------------------------------------------
 
 data MyList = Empty | Cons String MyList
   deriving (Show)
@@ -157,6 +136,23 @@ manualSum (x:xs) = x + (manualSum xs)
 -- sumRows (row:rows) = sum row + sumRows rows
 
 
+
+f :: Integer -> Integer
+f 0 = 1
+f n = n * f (n - 1)
+
+g :: Integer -> Float
+g n = fromIntegral (n + 4)
+
+results :: [Float]
+results = [g n | n <- [1..100]]
+
+r :: [Float]
+r = [n | n <- [1..100]]
+
+
+
+
 sumer :: DB -> Int
 sumer (DB rows) =
     case rows of
@@ -164,4 +160,68 @@ sumer (DB rows) =
         (row:rest) -> sum (tail row) + sumer (DB rest)
 
 
-----------------------------------------------------
+
+
+
+
+main :: IO ()
+main = do
+  -- Testing factorial functions
+  putStrLn $ "Factorial of 5: " ++ show (fact 5)
+  putStrLn ""
+  putStrLn $ "Tail-recursive factorial of 5: " ++ show (factTail 5)
+  putStrLn ""
+
+  -- Testing Fibonacci functions
+  putStrLn $ "Fibonacci of 5: " ++ show (fib 5)
+  putStrLn ""
+  putStrLn $ "Tail-recursive Fibonacci of 5: " ++ show (fibTail 5)
+  putStrLn ""
+
+  -- Testing Stirling numbers
+  putStrLn $ "Stirling number of n=7, k=3: " ++ show (stirling 7 3)
+  putStrLn ""
+  putStrLn $ "Stirling number of n=15, k=8: " ++ show (stirling 15 8)
+  putStrLn ""
+  putStrLn $ "Stirling number of n=55, k=2: " ++ show (stirling 55 2)
+  putStrLn ""
+
+  -- Testing listize and append
+  let result = listize "hello"
+  print result
+  putStrLn ""
+  let r2 = append [1, 2, 3, 4] 5
+  print r2
+  putStrLn ""
+
+  -- Testing custom list (MyList) and firstElement
+  putStrLn $ "First element of myList: " ++ firstElement myList
+  putStrLn ""
+  putStrLn $ "First element of myEmptyList: " ++ firstElement myEmptyList
+  putStrLn ""
+
+  -- Testing DB functions
+  putStrLn "DB contents:"
+  printDB db
+  putStrLn ""
+
+  putStrLn "Sum of all elements except the first in each row of the DB:"
+  putStrLn ""
+  putStrLn $ "Manual sum of dd: " ++ show (manualSum dd)
+  putStrLn ""
+  putStrLn $ "Sum using sumList1: " ++ show (sumList1 (map fromIntegral dd))
+  putStrLn ""
+  putStrLn $ "Sum using sumList2: " ++ show (sumList2 (map fromIntegral dd))
+  putStrLn ""
+  putStrLn $ "Sum of all columns (excluding the first one) in the DB: " ++ show (sumer db)
+  putStrLn ""
+
+  -- Printing results of function `g` applied to numbers from 1 to 100
+  putStrLn "Results of function g for numbers 1 to 100:"
+  print results
+  putStrLn ""
+
+  -- Checking if all elements in one list are present in another list
+  putStrLn "Checking if all elements of [1, 2, 3] are in [1, 2, 3, 4]:"
+  print $ all (`elem` [1, 2, 3, 4]) [1, 2, 3]
+  putStrLn ""
