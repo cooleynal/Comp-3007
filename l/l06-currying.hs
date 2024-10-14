@@ -1,22 +1,23 @@
--- Custom implementation of map
+
+
+
 myMap :: (a -> b) -> [a] -> [b]
 myMap f l =
   let op x z = f x : z
    in foldr op [] l
 
--- Custom implementation of filter
+
 myFilter :: (a -> Bool) -> [a] -> [a]
 myFilter p l =
   let op x z = if p x then x : z else z
    in foldr op [] l
 
--- Custom implementation of reverse
 rev :: [a] -> [a]
 rev l = foldr snoc [] l
   where
     snoc x l = l ++ [x]
 
--- Main function to demonstrate usage
+
 main :: IO ()
 main = do
   -- Example usage of myMap

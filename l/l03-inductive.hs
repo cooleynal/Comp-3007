@@ -1,5 +1,3 @@
-
-
 data Colour = Blue | Red | Yellow
   deriving (Show) -- directs compiler to derive "show" method
 
@@ -76,3 +74,33 @@ paint Empty cc = Empty
 paint (AddCar (Car colour price model) fleet) cc =
   AddCar (Car (cc colour) price model) (paint fleet cc)
 
+
+
+main :: IO ()
+main = do
+  -- Test size function
+  putStrLn $ "Number of cars in fleet: " ++ show (size fleet)
+
+  -- Test value function
+  putStrLn $ "Total value of fleet: " ++ show (value fleet)
+
+  -- Test maxPrice function
+  putStrLn $ "Maximum price in fleet: " ++ show (maxPrice fleet)
+
+  -- Test hasModel function
+  let modelToCheck = "BMW Highsnoot"
+  putStrLn $ "Does the fleet have model '" ++ modelToCheck ++ "': " ++ show (hasModel fleet modelToCheck)
+
+  -- Test painting cars
+  let paintedFleet = paint fleet unBlue
+  putStrLn "Fleet after painting (changing blue to red):"
+  print paintedFleet
+
+  -- Test hasModel for a model not present
+  let modelNotPresent = "Nonexistent Car"
+  putStrLn $ "Does the fleet have model '" ++ modelNotPresent ++ "': " ++ show (hasModel fleet modelNotPresent)
+
+  -- Test unBlue function directly
+  putStrLn $ "Changing Blue to Red:"
+  let changedColour = unBlue Blue
+  putStrLn $ "Changed Colour: " ++ show changedColour
