@@ -226,24 +226,39 @@ parseDef str = do
     parseEnd rest3
     return $ PR (Def name exp) rest3
 
+
+printDefs :: [Def] -> IO ()
+printDefs [] = return ()
+printDefs (def : defs) = do
+  putStrLn (show def)
+  printDefs defs
+
+
+
+
+
 main :: IO ()
 main = do
 
-    let testInput = "if(stuff(x),y,z)"
-    let result = parseIf testInput
-    print result
-    putStrLn ""
+    -- let testInput = "if(stuff(x),y,z)"
+    -- let result = parseIf testInput
+    -- print result
+    -- putStrLn ""
 
 
-    putStrLn "Parsed cons:"
-    let testInput2 = "5"
-    let r1 = parseConst testInput2
-    print r1
+    -- putStrLn "Parsed cons:"
+    -- let testInput2 = "5"
+    -- let r1 = parseConst testInput2
+    -- print r1
 
-    putStrLn "Parsed 11cons:"
-    let testInput2 = "1.4a"
-    let r2 = parseExp "a("
-    print r2
+    -- putStrLn "Parsed 11cons:"
+    -- let testInput2 = "1.4a"
+    -- let r2 = parseExp "a("
+    -- print r2
+
+    -- putStrLn "parseDef "
+    -- let r3 = parseDef "f = plus(times(3.3,23.4),0.0)"
+    -- printDefs r3
 
 
     -- putStrLn "Parsed cons:"
@@ -270,6 +285,16 @@ main = do
 
 
 
+-- processLines :: [String] -> IO ()
+-- processLines [] = return ()
+-- processLines (line:lines) = do
+
+--     putStrLn $ "Parsing line: " ++ line
+--     case parseDef line of
+--         Just (PR def _) -> do
+--             putStrLn (show def)
+--         Nothing -> putStrLn ("FAILED " ++ line)
+--     processLines lines
 
 
 processLines :: [String] -> IO ()
@@ -277,7 +302,6 @@ processLines [] = return ()
 processLines (line:lines) = do
     putStrLn $ "Parsing line: " ++ line
     case parseDef line of
-        Just (PR def _) -> do
-            putStrLn (show def)
-        Nothing -> putStrLn ("FAILED " ++ line)
+        Just (PR def _) -> printDefs [def]  -- Pass the single Def as a list
+        Nothing         -> putStrLn ("FAILED to parse: " ++ line)
     processLines lines
