@@ -22,6 +22,20 @@ filter f l = foldr fapply nil l
 
 
 
+-- foldr
+-- func f l =
+--     let operator x z [apply f to x] z
+--     in foldr operator [empty case]
+
+
+
+
+-- fail rec
+-- function :: [a] -> Accumulator -> result
+-- function [] acc = acc
+-- function (x : xs) acc = functionxs
+-- (updateAccumulatorBasedOn(x, acc))
+
 main :: IO ()
 main = do
   putStrLn ""

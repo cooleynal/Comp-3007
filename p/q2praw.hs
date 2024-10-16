@@ -1,6 +1,5 @@
 
 
-
 data Map a b = Empty | Add a b (Map a b) deriving (Show,Eq)
 
 
@@ -38,7 +37,6 @@ update x y (Add u v m) =
     if x==u then Add x y m
     else Add u v (update x y m)
 
--- EXAMPLES FOR TESTING
 
 sampleMap1 :: Map String Int
 sampleMap1 = Add "headphones" 1 (Add "shawarma" 17 (Add "phaser" 1 Empty))
@@ -52,7 +50,7 @@ sampleTotebag1 = Totebag sampleMap1
 sampleTotebag2 :: Totebag
 sampleTotebag2 = Totebag sampleMap2
 
--- Sample list of accounts for the last two questions.
+
 acs :: [Ac]
 acs =
     [ Ac "Archibald" 1700 0 False
@@ -70,52 +68,63 @@ acs =
     ]
 
 
+--   member "shawarma" sampleMap1 ≡ True
+--   member "car keys" sampleMap1 ≡ False
 member :: Eq a => a -> Map a b -> Bool
-member a Empty          = False
-member a (Add a' v r)   = a == a' || member a r
+member k Empty =
+    False
+member k (Add k' v m) =
+    k == k' || member k m
 
+--   modify (+1) "shawarma" sampleMap1
+--   modify (+1) "car keys" sampleMap1
 modify :: Eq a => (b -> b) -> a -> Map a b -> Map a b
-modify f a Empty = Empty
-modify f k (Add k' v r)
-    | k == k'       = Add k (f v) r
-    | otherwise     = Add k' v (modify f k r)
+modify f k Empty =
+    Empty
+modify f k (Add k' v m) | k == k' =
+    Add k (f v) m
+modify f k (Add k' v' m) =
+    Add k' v' $ modify f k m
 
 
-
--- sums bag
--- combineTotebags sampleTotebag1 sampleTotebag2
+-- Example:
+--   combineTotebags sampleTotebag1 sampleTotebag2
+--   ≡ Totebag
+--       (Add "headphones"
+--             1
+--             (Add "phaser"
+--                  1
+--                  (Add "earbuds"
+--                       1
+--                       (Add "shawarma"
+--                            21
+--                            (Add "BFG9000"
+--                                  2
+--                                  Empty)))))
+--
 combineTotebags :: Totebag -> Totebag -> Totebag
-combineTotebags (Totebag tb1) (Totebag tb2) = Totebag $ combineMaps tb1 tb2
-    where
-        combineMaps :: Eq a => Map a Int -> Map a Int -> Map a Int
-        combineMaps Empty m2 = m2
-        combineMaps (Add k v p) m2
-            | member k m2   = combineMaps p $ modify (+ v) k m2
-            | otherwise = Add k v $ combineMaps p m2
+combineTotebags (Totebag m1) (Totebag m2) =
+    Totebag $ combineMaps m1 m2
+
+combineMaps :: Eq a => Map a Int -> Map a Int -> Map a Int
+combineMaps Empty m = m
+combineMaps (Add k n m1) m2 =
+    if member k m2 then combineMaps m1 $ modify (+ n) k m2
+    else Add k n $ combineMaps m1 m2
 
 
+-- balance :: Ac -> Int
+-- balance ac = acChequing ac + acSavings ac
 
 
 totalBalances :: [Ac] -> [(String, Int)]
-totalBalances acs = map totalBalance acs
+totalBalances = map toBalance
     where
-        totalBalance (Ac name balance1 balance2 _) = (name, balance1 + balance2)
+        toBalance ac = (acId ac, balance ac)
+        balance ac = acChequing ac + acSavings ac
 
--- a list of the deadbeats in an account list. A deadbeat is
 
--- someone who has no money in either savings or chequing *and* is *not* a VIP.
-
--- Example: deadbeats acs ≡ ["Ludo","Violet"].
-
--- b1 && b2 && False = deadbeat
 deadbeats :: [Ac] -> [String]
-deadbeats = map acId . filter ele
-    where ele ac = not (acVIP ac) && acSavings ac == 0 && acChequing ac == 0
-
-
-deadbeats' :: [Ac] -> [String]
-deadbeats' = foldr ele []
-    where
-    ele ac acc -- account, accumulator
-        | not (acVIP ac) && acSavings ac == 0 && acChequing ac == 0 = acId ac : acc
-        | otherwise = acc
+deadbeats =
+    map acId . filter isDeadbeat
+    where isDeadbeat ac = not (acVIP ac) && acSavings ac == 0 && acChequing ac == 0

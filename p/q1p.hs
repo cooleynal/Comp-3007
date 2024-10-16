@@ -60,6 +60,7 @@ class S a where
 -- define the three required functions as shown. Because of this declaration, if
 -- the compiler sees (s x) where x is of type Int, it will use the s defined
 -- here.
+
 instance S Int where
     z = 0
     s = (+1)

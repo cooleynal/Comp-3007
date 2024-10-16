@@ -43,7 +43,7 @@ sayMe _ = "Not between 1 and 5"
 -- Factorial
 factorial :: (Integral a) => a -> a
 factorial 0 = 1
-factorial n = n * factorial (n - 1)
+factorial n = n *  factorial (n - 1)
 
 -- Add Vectors
 addVectors :: (Num a) => (a, a) -> (a, a) -> (a, a)

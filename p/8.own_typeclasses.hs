@@ -10,7 +10,8 @@
 -- Applicative	    Apply functions wrapped in a context	pure, <*>
 -- Monad	        Use in a monadic context	            >>=, return
 -- Traversable	    Traverse data structures	            traverse
--- RealFloat
+
+
 
 import qualified Data.Maybe as M
 
@@ -27,7 +28,8 @@ exampleEq = eqFunction 5 5  -- True
 -- Ordering
 -- Operators: <, >, compare
 ordFunction :: Ord a => a -> a -> Ordering
-ordFunction a b = compare a b
+ordFunction a b = compare a a
+
 
 exampleOrd :: Ordering
 exampleOrd = ordFunction 10 5  -- GT
@@ -112,6 +114,12 @@ traverseFunction f xs = fmap f xs  -- Using fmap directly for lists
 
 exampleTraversable :: [Int]
 exampleTraversable = traverseFunction (*2) [1, 2, 3]  -- [2, 4, 6]
+
+
+
+
+
+
 
 -- Data definitions
 data Point = Point Float Float deriving (Show)
