@@ -31,34 +31,41 @@
 -- addPos l = foldr add 0 l
 --   where add ele acc = ele + acc
 
+-- import Debug.Trace (trace)
+
+
+
 -- DONE
 addPos :: [Int] -> Int
 addPos l = foldr add 0 l
-  where add ele acc |  ele > 0 =  ele + acc | otherwise = acc
+  where
+    add ele acc
+      |  ele > 0  =  ele + acc
+      | otherwise = acc
 
 addPosTest :: Bool
 addPosTest = addPos [1, 2, -3, 4] == 7
 
 
 
-
-
-
 -- SORT DONE
-sort :: (Ord a) => [a] -> [a]
+-- sort :: (Ord a) => [a] -> [a]
+-- sort [] = []
+-- sort (x:xs) =
+--     let smallerSorted = sort [a | a <- xs, a <= x]
+--         biggerSorted = sort [a | a <- xs, a > x]
+--     in  smallerSorted ++ [x] ++ biggerSorted
+
+sort :: [Int] -> [Int]
 sort [] = []
-sort (x:xs) =
-    let smallerSorted = sort [a | a <- xs, a <= x]
-        biggerSorted = sort [a | a <- xs, a > x]
-    in  smallerSorted ++ [x] ++ biggerSorted
+sort l = insert (head l) (sort (tail l))
 
 
 -- Question 2
 -- Difficulty: M
 -- Use insert and foldr to sort a list of integers.
 -- sort :: [Int] -> [Int]
--- sort l = insert 0 l -- didnt work
---   -- undefined
+-- sort =  undefined
 
 insert :: Int -> [Int] -> [Int]
 insert k [] = [k]
@@ -77,16 +84,40 @@ sortTest = sort [4, 2, 3, 1] == [1, 2, 3, 4]
 --   undefined
 
 -- DONE
+-- isRevSorted :: [Int] -> Bool
+-- isRevSorted [] = True
+-- isRevSorted (x : xl)
+--   | length xl > 0 = x > head xl && isRevSorted xl -- is safe for empty case
+--   | otherwise = True -- needed but poor use
+
+
+-- isRevSorted :: [Int] -> Bool
+-- isRevSorted [] = True
+-- isRevSorted [_] = True
+-- isRevSorted (x : y : xs)
+--   | x >= y          = isRevSorted xs
+--   | otherwise       = False
+
+-- init, all but last
+-- tail, all but first
+-- isRevSorted :: [Int] -> Bool
+-- isRevSorted [] = True
+-- isRevSorted [x] = True
+-- isRevSorted xs = foldr check True (zip (init xs) (tail xs))
+--   where
+--     check (prev, curr) acc =
+--       trace ("curr: " ++ show curr ++ ", prev: " ++ show prev ++ ", acc: " ++ show acc)
+--       (curr <= prev && acc)
+
 isRevSorted :: [Int] -> Bool
 isRevSorted [] = True
-isRevSorted (x : xl)
-  | length xl > 0 = x > head xl && isRevSorted xl
-  | otherwise = True -- needed but poor use
+isRevSorted [_] = True
+isRevSorted xs = foldr check True (zip (init xs) (tail xs))
+  where
+    check (prev, curr) acc = curr <= prev && acc
 
 
 
-
-  -- undefined
 
 isRevSortedTest0 = isRevSorted [4, 3, 2, 1]
 
@@ -104,8 +135,8 @@ sumPos l =
 sumPos0 :: [Int] -> Int -> Int
 sumPos0 [] acc = acc
 sumPos0 (x : xs) acc
-  | x > 0 = sumPos0 xs (x + acc)
-  | otherwise = sumPos0 xs acc
+  | x > 0       = sumPos0 xs (x + acc)
+  | otherwise   = sumPos0 xs acc
 
 sumPosTest = sumPos [1, 2, -3, 4] == 7
 
@@ -157,9 +188,15 @@ splitTest = split (<= 3) [1, 4, 3, 5, 2] `pairSetEq` ([1, 3, 2], [4, 5])
 -- Difficulty: E
 -- Write a version of the built-in head function that indicates an error using
 -- Maybe instead of raisihg an exception.
+-- hd :: [a] -> Maybe a
+-- hd [] = Nothing
+-- hd l = do Just (head l) -- nothing wrong this this
+
+
 hd :: [a] -> Maybe a
-hd [] = Nothing
-hd l = do Just (head l)
+hd []         = Nothing
+hd (x : _)    = Just x
+
 
 
 hdTest = hd "123" == Just '1' && hd "" == Nothing
@@ -181,7 +218,9 @@ hdTest = hd "123" == Just '1' && hd "" == Nothing
 -- "Just" and "Nothing" should not appear in your code.
 lookup2 :: (Eq a, Eq b) => a -> [(a, b)] -> [(b, c)] -> Maybe c
 lookup2 x m1 m2 = do
-  undefined
+  v1 <- lookup x m1
+  v2 <- lookup v1 m2
+  return v2
 
 lookup2Test = lookup2 1 [(0, 1), (1, 2), (2, 3)] [(0, 1), (1, 2), (2, 3)] == Just 3
 
@@ -229,6 +268,20 @@ parseHexConstTest = parseHexConst "x33AF0(22.2)" == Just (PR (HexConst "33AF0") 
 -- list length, and combine them using +++.
 parseList str = do
   undefined
+
+
+-- parseList :: Parser Exp
+-- parseList str = do
+--   PR _ r1         <- parseChar '[' str
+--   PR elems r2     <- parseExp r1
+--   PR _ r3         <- parseChar ']' r2
+--   return $ PR (List elems) r3
+
+
+-- need to review this
+
+
+
 
 parseListTest = parseList "[y,22.0,z(w)]" == Just (PR (List [Var "y", Const 22.0, App1 "z" (Var "w")]) "")
 
