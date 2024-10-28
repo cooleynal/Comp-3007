@@ -10,11 +10,14 @@ type Name = String
 -- Expressions
 data Exp
   = Const Double
+  | HexConst String
+  | List [Exp]
   | Var String
   | If Exp Exp Exp
   | App1 Name Exp
   | App2 Name Exp Exp
   deriving (Show, Eq)
+
 
 -- Definitions
 data Def
@@ -192,6 +195,42 @@ parseDef str = do
     PR exp rest3 <- parseExp rest2
     parseEnd rest3
     return $ PR (Def name exp) rest3
+
+
+parseList :: Parser Exp
+parseList str = do
+  trace ("Input string: " ++ str) $ return ()
+
+  PR _ r1     <- parseChar '[' str
+  trace ("After parsing '[': " ++ show r1) $ return ()
+
+  PR ex1 r2   <- parseExp r1
+  trace ("Parsed ex1: " ++ show ex1 ++ ", remaining: " ++ r2) $ return ()
+
+  PR _ r3     <- parseChar ',' r2
+  trace ("After parsing first ',': " ++ r3) $ return ()
+
+  PR ex2 r4   <- parseExp r3
+  trace ("Parsed ex2: " ++ show ex2 ++ ", remaining: " ++ r4) $ return ()
+
+  PR _ r5     <- parseChar ',' r4
+  trace ("After parsing second ',': " ++ r5) $ return ()
+
+  PR ex3 r6   <- parseExp r5
+  trace ("Parsed ex3: " ++ show ex3 ++ ", remaining: " ++ r6) $ return ()
+
+  PR _ r7     <- parseChar ']' r6
+  trace ("After parsing ']': " ++ r7) $ return ()
+
+  -- return $ PR (List ([] : ex1 ++ [ex2] ++ [ex3]) ) r7
+  -- return $ PR (List [ex1, ex2, ex3]) r7
+  return $ PR ( List (ex1 : ex2 : ex3 : []) ) r7
+
+
+parseListTest = parseList "[y,22.0,z(w)]" == Just (PR (List [Var "y", Const 22.0, App1 "z" (Var "w")]) "")
+
+
+
 
 
 factorial :: Int -> Int

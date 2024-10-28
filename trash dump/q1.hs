@@ -35,15 +35,9 @@ dicty = Entry "a1" "ab" (Entry "a2" "ba" (Entry "b" "ka" (Entry "z" "ba" Mt)))
 pre :: String -> Dict -> [String]
 pre _ Mt = []
 pre s (Entry k v p)
-  | s == v    = [k] ++ pre s p
+  | s == v    = k : pre s p
   | otherwise = pre s p
 
-
-pre1 :: String -> Dict -> [String]
-pre1 _ Mt = []
-pre1 s (Entry k v p) = val ++ pre s p
-  where
-    val = if s == v then [k] else []
 
 
 dict1 :: Dict
@@ -77,13 +71,6 @@ db2 =
 
 -- difference d1 d2: like d1, but remove any key (with its value) that is also
 -- in d2
--- difference :: Dict -> Dict -> Dict
--- difference Mt _ = Mt
--- difference _ Mt = Mt
--- difference (Entry k1 v1 p1) d2
---   | member k1 d2   = difference p1 d2
---   | otherwise      = Entry k1 v1 (difference p1 d2)
-
 difference :: Dict -> Dict -> Dict
 difference Mt d2 = d2
 difference _ Mt = Mt
@@ -98,17 +85,6 @@ select (_ : rows) n = select rows n
 select _ _ = []
 
 -- Replace all negative integers by 0. Assume the DB is valid.
--- unNeg :: DB -> DB
--- unNeg [] = []
--- unNeg(row:rows) = unNeg1 row : unNeg rows
---   where
---     unNeg1 :: [Int] -> [Int]
---     unNeg1 [] = []
---     unNeg1 (x : xs)
---       | x < 0     = 0 : unNeg1 xs
---       | otherwise = x : unNeg1 xs
-
-
 unNeg :: DB -> DB
 unNeg [] = []
 unNeg (row : prows) = unNegEle row : unNeg prows
@@ -119,25 +95,28 @@ unNeg (row : prows) = unNegEle row : unNeg prows
     unNegEle (ele : prow) = ele : unNegEle prow
 
 
+-- unNeg :: [[Int]] -> [[Int]]
+-- unNeg [] = []
+-- unNeg (row : prows) = unNegEle row : unNeg prows
+--   where
+--     unNegEle :: [Int] -> [Int]
+--     unNegEle [] = []
+--     unNegEle (ele : prow)
+--       | ele < 0   = 0 : unNegEle prow
+--       | otherwise = ele : unNegEle prow
+
 
 
 -- Remove any rows that contain at least one negative value.  Assume the DB is valid.
 deNeg :: DB -> DB
 deNeg [] = []
-deNeg(row:rows)
-  | all (> 0) row   = row : deNeg rows
-  | otherwise       = deNeg rows
-
-
--- deNeg :: DB -> DB
--- deNeg [] = []
--- deNeg (r : p) | tf r = r : deNeg p
---   where
---     tf [] = True
---     tf (ele : prow)
---       | ele < 0   = False && tf prow
---       | otherwise = True && tf prow
--- deNeg (_ : p)       = deNeg p
+deNeg (r : p) | tf r = r : deNeg p
+  where
+    tf [] = True
+    tf (ele : prow)
+      | ele < 0   = False && tf prow
+      | otherwise = True && tf prow
+deNeg (_ : p)       = deNeg p
 
 
 -- intersect db1 db2: like db1, except discarding any rows whose key is not in
@@ -147,32 +126,20 @@ intersect :: DB -> DB -> DB
 intersect [] _ = []
 intersect _ [] = []
 intersect (x : xl) d2
-  | member1 x d2 = x : intersect xl d2
+  | isIn (head x) d2 = x : intersect xl d2
   | otherwise         =  intersect xl d2
 
+
+isIn :: Int -> DB -> Bool
+isIn _ [] = False
+isIn ele (x : _) | ele == head x = True
+isIn ele (_ : xl) = isIn ele xl
 
 member1 :: [Int] -> DB -> Bool
 member1 _ [] = False
 member1 x (y:yl)
   | x == y = True
   | otherwise = member1 x yl
-
-
-
--- intersect :: DB -> DB -> DB
--- intersect [] _ = []
--- intersect _ [] = []
--- intersect (x : xl) d2
---   | isIn (head x) d2 = x : intersect xl d2
---   | otherwise         =  intersect xl d2
-
-
--- isIn :: Int -> DB -> Bool
--- isIn _ [] = False
--- isIn ele (x : _) | ele == head x = True
--- isIn ele (_ : xl) = isIn ele xl
-
-
 
 
 main :: IO ()
@@ -197,7 +164,7 @@ main = do
   print $ deNeg db1
 
   putStrLn "intersect"
-  print $ intersect db1 db1
+  print $ intersect db2 db1
 
 
 

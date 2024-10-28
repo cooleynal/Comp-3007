@@ -31,7 +31,7 @@
 -- addPos l = foldr add 0 l
 --   where add ele acc = ele + acc
 
--- import Debug.Trace (trace)
+import Debug.Trace (trace)
 
 
 
@@ -56,10 +56,17 @@ addPosTest = addPos [1, 2, -3, 4] == 7
 --         biggerSorted = sort [a | a <- xs, a > x]
 --     in  smallerSorted ++ [x] ++ biggerSorted
 
-sort :: [Int] -> [Int]
-sort [] = []
-sort l = insert (head l) (sort (tail l))
+-- sort :: [Int] -> [Int]
+-- sort [] = []
+-- sort l = insert (head l) (sort (tail l))
 
+
+-- sort [4, 2, 3, 1]
+sort :: [Int] -> [Int]
+sort l = foldr op [] l
+  where
+    op x = insert x
+    -- z = []
 
 -- Question 2
 -- Difficulty: M
@@ -266,20 +273,57 @@ parseHexConstTest = parseHexConst "x33AF0(22.2)" == Just (PR (HexConst "33AF0") 
 -- surrounded by "[" and "].
 -- Hint: consider writing several independent parsers for different cases of
 -- list length, and combine them using +++.
-parseList str = do
-  undefined
+-- parseList str = do
+--   undefined
 
 
 -- parseList :: Parser Exp
 -- parseList str = do
---   PR _ r1         <- parseChar '[' str
---   PR elems r2     <- parseExp r1
---   PR _ r3         <- parseChar ']' r2
---   return $ PR (List elems) r3
+--   trace ("Input string: " ++ str) $ return ()
+
+--   PR _ r1     <- parseChar '[' str
+--   trace ("After parsing '[': " ++ show r1) $ return ()
+
+--   PR ex1 r2   <- parseExp r1
+--   trace ("Parsed ex1: " ++ show ex1 ++ ", remaining: " ++ r2) $ return ()
+
+--   PR _ r3     <- parseChar ',' r2
+--   trace ("After parsing first ',': " ++ r3) $ return ()
+
+--   PR ex2 r4   <- parseExp r3
+--   trace ("Parsed ex2: " ++ show ex2 ++ ", remaining: " ++ r4) $ return ()
+
+--   PR _ r5     <- parseChar ',' r4
+--   trace ("After parsing second ',': " ++ r5) $ return ()
+
+--   PR ex3 r6   <- parseExp r5
+--   trace ("Parsed ex3: " ++ show ex3 ++ ", remaining: " ++ r6) $ return ()
+
+--   PR _ r7     <- parseChar ']' r6
+--   trace ("After parsing ']': " ++ r7) $ return ()
+
+--   -- return $ PR (List ([] : ex1 ++ [ex2] ++ [ex3]) ) r7
+--   -- return $ PR (List [ex1, ex2, ex3]) r7
+--   return $ PR ( List (ex1 : ex2 : ex3 : []) ) r7
 
 
--- need to review this
 
+parseList :: Parser Exp
+parseList str = do
+  PR _ r1     <- parseChar '[' str
+
+  PR ex1 r2   <- parseExp r1
+
+  PR _ r3     <- parseChar ',' r2
+  PR ex2 r4   <- parseExp r3
+
+  PR _ r5     <- parseChar ',' r4
+  PR ex3 r6   <- parseExp r5
+
+  PR _ r7     <- parseChar ']' r6
+  -- return $ PR (List ([] : ex1 ++ [ex2] ++ [ex3]) ) r7
+  -- return $ PR (List [ex1, ex2, ex3]) r7
+  return $ PR ( List (ex1 : ex2 : ex3 : []) ) r7
 
 
 
