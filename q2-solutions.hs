@@ -27,68 +27,21 @@
 -- Question 1
 -- Difficulty: E
 -- Use foldr to add all the positive numbers in a list of integers.
--- addPos :: [Int] -> Int
--- addPos l = foldr add 0 l
---   where add ele acc = ele + acc
-
-import Debug.Trace (trace)
-
-
--- foldr t => (a -> b -> b) -> b -> t a -> b
---            (ele -> acc -> acc) -> acc_start -> list l -> acc_end
-
--- Difficulty: E
--- Use foldr to add all the positive numbers in a list of integers.
--- DONE
 addPos :: [Int] -> Int
-addPos l = foldr add 0 l
-  where
-    -- add :: Int -> Int -> Int
-    add ele acc -- (a -> b -> b) (ele -> acc -> acc)
-      | ele > 0   = ele + acc
-      | otherwise = acc
+addPos l =
+  foldr (\x z -> if x > 0 then z + x else z) 0 l
 
 
-
-
--- addPos :: [Int] -> Int
--- addPos l = foldr add 0 l
-
--- add :: Int -> Int -> Int
--- add ele acc
---   | ele > 0   = ele + acc
---   | otherwise = acc
-
-
-
-addPosTest :: Bool
 addPosTest = addPos [1, 2, -3, 4] == 7
 
 -- Question 2
 -- Difficulty: M
 -- Use insert and foldr to sort a list of integers.
--- sort :: [Int] -> [Int]
--- sort =  undefined
-
--- SORT DONE
--- sort :: (Ord a) => [a] -> [a]
--- sort [] = []
--- sort (x:xs) =
---     let smallerSorted = sort [a | a <- xs, a <= x]
---         biggerSorted = sort [a | a <- xs, a > x]
---     in  smallerSorted ++ [x] ++ biggerSorted
-
--- sort :: [Int] -> [Int]
--- sort [] = []
--- sort l = insert (head l) (sort (tail l))
-
-
--- sort [4, 2, 3, 1]
 sort :: [Int] -> [Int]
-sort l = foldr insert [] l
+sort l =
+  foldr insert [] l
 
--- each element a, b is the accumulator
--- (a -> b -> b)
+
 insert :: Int -> [Int] -> [Int]
 insert k [] = [k]
 insert k (x : l) | k <= x = k : x : l
@@ -96,60 +49,13 @@ insert k (x : l) = x : insert k l
 
 sortTest = sort [4, 2, 3, 1] == [1, 2, 3, 4]
 
-
-
 -- Question 3
 -- Difficulty: H
 -- Test if a list is reverse-sorted, i.e. sorted in non-increasing order.
--- isRevSorted :: [Int] -> Bool
--- isRevSorted l =
---   undefined
-
--- DONE
--- isRevSorted :: [Int] -> Bool
--- isRevSorted [] = True
--- isRevSorted (x : xl)
---   | length xl > 0 = x > head xl && isRevSorted xl -- is safe for empty case
---   | otherwise = True -- needed but poor use
-
 isRevSorted :: [Int] -> Bool
-isRevSorted [] = True
-isRevSorted (_ : []) = True
-isRevSorted (x : xl) = x > head xl && isRevSorted xl
-
-
-
--- thinks needs touple to use foldr on sorting a list
-
-
-
-
--- isRevSorted :: [Int] -> Bool
--- isRevSorted [] = True
--- isRevSorted [_] = True
--- isRevSorted (x : y : xs)
---   | x >= y          = isRevSorted xs
---   | otherwise       = False
-
--- init, all but last
--- tail, all but first
--- isRevSorted :: [Int] -> Bool
--- isRevSorted [] = True
--- isRevSorted [x] = True
--- isRevSorted xs = foldr check True (zip (init xs) (tail xs))
---   where
---     check (prev, curr) acc =
---       trace ("curr: " ++ show curr ++ ", prev: " ++ show prev ++ ", acc: " ++ show acc)
---       (curr <= prev && acc)
-
--- isRevSorted :: [Int] -> Bool
--- isRevSorted [] = True
--- isRevSorted [_] = True
--- isRevSorted xs = foldr check True (zip (init xs) (tail xs))
---   where
---     check (prev, curr) acc = curr <= prev && acc
-
-
+isRevSorted l =
+  let op x (biggest, isSorted) = if x >= biggest then (x, isSorted) else (0, False)
+   in snd $ foldr op (0, True) l
 
 
 isRevSortedTest0 = isRevSorted [4, 3, 2, 1]
@@ -159,40 +65,28 @@ isRevSortedTest1 = not $ isRevSorted [4, 2, 3, 1]
 -- Question 4
 -- Difficulty: E
 -- Use tail recursion to add all the positive numbers in a list of integers.
-
--- DONE
 sumPos :: [Int] -> Int
 sumPos l =
   sumPos0 l 0
 
 sumPos0 :: [Int] -> Int -> Int
-sumPos0 [] acc = acc
-sumPos0 (x : xs) acc
-  | x > 0       = sumPos0 xs (x + acc) -- needs to be wraped, otherwise bad
-  | otherwise   = sumPos0 xs acc
+sumPos0 [] z = z
+sumPos0 (x : l) z | x > 0 = sumPos0 l (x + z)
+sumPos0 (_ : l) z = sumPos0 l z
+
 
 sumPosTest = sumPos [1, 2, -3, 4] == 7
-
-
-
-
-
 
 -- Question 5
 -- Difficult: M
 -- Write a tail recursive version of the split function from Assignment 4 (code supplied below).
 split :: (a -> Bool) -> [a] -> ([a], [a])
 split p l = split0 p l ([], [])
-                    -- predicate    l          rest (false, True)
--- split0 :: (a -> Bool) -> [a] -> ([a], [a]) -> ([a], [a])
--- split0 = undefined
 
-                    -- predicate    l          rest (true, false)
 split0 :: (a -> Bool) -> [a] -> ([a], [a]) -> ([a], [a])
-split0 p [] (a, b) = (a, b) -- could sort here, not needed according to example
-split0 p (x : xl) (a, b) | p x  = split0 p xl (x : a, b)
-split0 p (x : xl) (a, b) = split0 p xl (a, x : b)
-
+split0 p [] z = z
+split0 p (x : l) (l1, l2) | p x = split0 p l (x : l1, l2)
+split0 p (x : l) (l1, l2) = split0 p l (l1, x : l2)
 
 
 -- This is a renaming of the split function from Assignment 4.
@@ -200,8 +94,8 @@ splitR :: (a -> Bool) -> [a] -> ([a], [a])
 splitR p [] = ([], [])
 splitR p (x : l) =
   if p x then (x : l1, l2) else (l1, x : l2)
-  where
-    (l1, l2) = splitR p l
+ where
+  (l1, l2) = splitR p l
 
 setEq :: (Eq a) => [a] -> [a] -> Bool
 setEq l0 l1 = all (`elem` l0) l1 && all (`elem` l1) l0
@@ -211,48 +105,28 @@ pairSetEq (l00, l01) (l10, l11) = setEq l00 l10 && setEq l01 l11
 
 splitTest = split (<= 3) [1, 4, 3, 5, 2] `pairSetEq` ([1, 3, 2], [4, 5])
 
-
-
-
--- DONE
-
 -- Question 6
 -- Difficulty: E
 -- Write a version of the built-in head function that indicates an error using
 -- Maybe instead of raisihg an exception.
--- hd :: [a] -> Maybe a
--- hd [] = Nothing
--- hd l = do Just (head l)
-
-
 hd :: [a] -> Maybe a
-hd []         = Nothing
-hd (x : _)    = Just x
-
+hd [] = Nothing
+hd (x : l) = Just x
 
 
 hdTest = hd "123" == Just '1' && hd "" == Nothing
 
-
-
-
-
-
 -- Question 7
 -- Difficulty: E
--- Look up a key in a map,
--- then look up the key's value in a second map,
-
--- using Maybe to deal with errors.
-
+-- Look up a key in a map, then look up the key's value in a second map, using
+-- Maybe to deal with errors.
 -- Coding restriction: your code should just be a sequence of lines in the "do".
-
 -- "Just" and "Nothing" should not appear in your code.
 lookup2 :: (Eq a, Eq b) => a -> [(a, b)] -> [(b, c)] -> Maybe c
 lookup2 x m1 m2 = do
   v1 <- lookup x m1
-  v2 <- lookup v1 m2
-  return v2
+  lookup v1 m2
+
 
 lookup2Test = lookup2 1 [(0, 1), (1, 2), (2, 3)] [(0, 1), (1, 2), (2, 3)] == Just 3
 
@@ -263,33 +137,20 @@ lookup2Test = lookup2 1 [(0, 1), (1, 2), (2, 3)] [(0, 1), (1, 2), (2, 3)] == Jus
 -- floating point values, hex values are included. These values are written with
 -- an "x" preceding them, e.g. "x3ED4F". More precisely, they are strings starting
 -- with "x" followed by characters satisfying isHexChar (see below).
-
--- parseHexConst :: Parser Exp
--- parseHexConst str = do
-
-
--- DONE
-
 parseHexConst :: Parser Exp
 parseHexConst str = do
-  PR _ rest1 <- parseChar 'x' str
-  PR hex rest2 <- parseHex rest1
-  return $ PR (HexConst hex) rest2
+  PR _ rest0 <- parseChar 'x' str
+  PR hstr rest1 <- parseHexString rest0
+  return $ PR (HexConst hstr) rest1
 
-
-parseHex :: Parser String
-parseHex = collect isHexChar
+parseHexString :: Parser String
+parseHexString = collect isHexChar
 
 
 isHexChar :: Char -> Bool
 isHexChar c = c `elem` "0123456789ABCDEF"
 
 parseHexConstTest = parseHexConst "x33AF0(22.2)" == Just (PR (HexConst "33AF0") "(22.2)")
-
--- parseHexConst "x33AF0(22.2)"
-
-
-
 
 -- Question 9 -- EXTRA CREDIT (10 pts added to your score, total capped at 100%)
 -- Difficulty: H
@@ -298,95 +159,25 @@ parseHexConstTest = parseHexConst "x33AF0(22.2)" == Just (PR (HexConst "33AF0") 
 -- surrounded by "[" and "].
 -- Hint: consider writing several independent parsers for different cases of
 -- list length, and combine them using +++.
--- parseList str = do
---   undefined
-
-
--- parseList :: Parser Exp
--- parseList str = do
---   trace ("Input string: " ++ str) $ return ()
-
---   PR _ r1     <- parseChar '[' str
---   trace ("After parsing '[': " ++ show r1) $ return ()
-
---   PR ex1 r2   <- parseExp r1
---   trace ("Parsed ex1: " ++ show ex1 ++ ", remaining: " ++ r2) $ return ()
-
---   PR _ r3     <- parseChar ',' r2
---   trace ("After parsing first ',': " ++ r3) $ return ()
-
---   PR ex2 r4   <- parseExp r3
---   trace ("Parsed ex2: " ++ show ex2 ++ ", remaining: " ++ r4) $ return ()
-
---   PR _ r5     <- parseChar ',' r4
---   trace ("After parsing second ',': " ++ r5) $ return ()
-
---   PR ex3 r6   <- parseExp r5
---   trace ("Parsed ex3: " ++ show ex3 ++ ", remaining: " ++ r6) $ return ()
-
---   PR _ r7     <- parseChar ']' r6
---   trace ("After parsing ']': " ++ r7) $ return ()
-
---   -- return $ PR (List ([] : ex1 ++ [ex2] ++ [ex3]) ) r7
---   -- return $ PR (List [ex1, ex2, ex3]) r7
---   return $ PR ( List (ex1 : ex2 : ex3 : []) ) r7
-
-
-
--- parseList :: Parser Exp
--- parseList str = do
---   PR _ r1     <- parseChar '[' str
-
---   PR ex1 r2   <- parseExp r1
-
---   PR _ r3     <- parseChar ',' r2
---   PR ex2 r4   <- parseExp r3
-
---   PR _ r5     <- parseChar ',' r4
---   PR ex3 r6   <- parseExp r5
-
---   PR _ r7     <- parseChar ']' r6
---   -- return $ PR (List ([] : ex1 ++ [ex2] ++ [ex3]) ) r7
---   -- return $ PR (List [ex1, ex2, ex3]) r7
---   return $ PR ( List (ex1 : ex2 : ex3 : []) ) r7
-
--- parseList :: Parser Exp
--- parseList str = do
---   PR _ r1 <- parseChar '[' str
---   PR elements r2 <- parseListArgs r1
---   return (PR (List elements) r2)
-
-
-
--- parseListArg str = do
---   PR arg rest0 <- parseExp str
---   PR _ rest1 <- parseChar ',' rest0
---   PR args rest2 <- parseListArgs rest1
---   return $ PR (arg : args) rest2
-
 parseList str = do
   PR _ rest0 <- parseChar '[' str
   PR l rest1 <- parseListArgs rest0
   return (PR (List l) rest1)
 
-
-parseListArg str = do
-  PR arg rest0 <- parseExp str
-  PR _ rest1 <- parseChar ',' rest0
-  PR args rest2 <- parseListArgs rest1
-  return $ PR (arg : args) rest2
-
+parseEndListArgs str = do
+  PR _ rest0 <- parseChar ']' str
+  return $ PR [] rest0
 
 parseLastListArg str = do
   PR arg rest0 <- parseExp str
   PR _ rest1 <- parseChar ']' rest0
   return $ PR [arg] rest1
 
-parseEndListArgs str = do
-  PR _ rest0 <- parseChar ']' str
-  return $ PR [] rest0
-
-
+parseListArg str = do
+  PR arg rest0 <- parseExp str
+  PR _ rest1 <- parseChar ',' rest0
+  PR args rest2 <- parseListArgs rest1
+  return $ PR (arg : args) rest2
 
 parseListArgs :: Parser [Exp]
 parseListArgs = parseEndListArgs +++ parseLastListArg +++ parseListArg
