@@ -6,18 +6,6 @@
 
 
 
--- [0,2,4,6,8,10,12,14,16,18,20]
--- max exponent, power raise
-
-
-
--- pass in 1 index
--- additionsOf :: Int -> Int -> Int -> [Int]
--- additionsOf n a p     | a > p =  takeWhile (<= n) [a + p, a + 2 * p ..]
--- additionsOf n p a     =  takeWhile (<= n) [a + p, a + 2 * p ..]
-
-
-
 multiplesOf :: Int -> Int -> [Int]
 multiplesOf n p = takeWhile (<= n) [0, p ..]
 
@@ -30,8 +18,13 @@ sumer _ _ _ = [] -- clear warning
 
 
 pairwiseSums :: Int -> [[Int]] -> [Int]
-pairwiseSums maxLimit [xs, ys] = [x + y | x <- xs, y <- ys, x + y <= maxLimit]
+pairwiseSums n lists = filter (<= n) $ combineAll lists
 
+combineAll :: [[Int]] -> [Int]
+combineAll [] = []
+combineAll (x:xs) = foldl addSums x xs
+  where
+    addSums acc currentList = acc ++ [a + b | a <- acc, b <- currentList]
 
 
 
@@ -39,9 +32,9 @@ main :: IO ()
 main = do
 
   let maxVal = 20
-  let parts = [4, 10]
-  -- print $ multiplesOf 20 2
-  -- print $ multiplesOf 20 5
+  -- let parts = [4, 3, 10]
+  -- let parts = [4,  10]
+  let parts = [10, 4, 2] -- exclude 1
 
   let result = sumer 0 maxVal parts
   print $ result
