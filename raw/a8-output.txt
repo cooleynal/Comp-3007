@@ -1,0 +1,19 @@
+[Enter command] 
+[Input row values separated by spaces] 
+[Enter command] 
+[Input row values separated by spaces] 
+[Enter command] 
+[Input row values separated by spaces] 
+[Enter command] 
+[Input row values separated by spaces] 
+[Enter command] 
+[Primary key] 
+[Column name] 
+Query result: 103
+[Enter command] 
+Customer {name = "Rongo", age = 102, accountBalance = 1.17}
+Customer {name = "Ringo", age = 103, accountBalance = 3.42654293e8}
+Customer {name = "Bongo", age = 24, accountBalance = 301.17}
+Customer {name = "Bingo", age = 23, accountBalance = 435.98}
+
+[Enter command] 

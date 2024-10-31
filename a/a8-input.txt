@@ -1,0 +1,13 @@
+addRow
+Bingo 23 435.98
+addRow
+Bongo 24 301.17
+addRow
+Ringo 103 342654293
+addRow
+Rongo 102 1.17 
+query
+Ringo
+age
+print
+quit

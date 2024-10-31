@@ -31,10 +31,10 @@ combineAll (x:xs) = foldl addSums x xs
 main :: IO ()
 main = do
 
-  let maxVal = 20
+  let maxVal = 300
   -- let parts = [4, 3, 10]
   -- let parts = [4,  10]
-  let parts = [10, 4, 2] -- exclude 1
+  let parts = [5, 25, 10] -- exclude 1
 
   let result = sumer 0 maxVal parts
   print $ result
