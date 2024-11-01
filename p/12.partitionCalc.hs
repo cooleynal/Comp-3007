@@ -1,11 +1,5 @@
 
 
-
-
-
-
-
-
 multiplesOf :: Int -> Int -> [Int]
 multiplesOf n p = takeWhile (<= n) [0, p ..]
 
@@ -15,32 +9,60 @@ sumer 0 n (arga:argr) = multiplesOf n arga : sumer 1 n argr
 sumer 1 n (arga:argr) = tail (multiplesOf n arga) : sumer 1 n argr
 sumer _ _ _ = [] -- clear warning
 
-
-
-pairwiseSums :: Int -> [[Int]] -> [Int]
-pairwiseSums n lists = filter (<= n) $ combineAll lists
-
-combineAll :: [[Int]] -> [Int]
-combineAll [] = []
-combineAll (x:xs) = foldl addSums x xs
+combineAll :: Int -> [[Int]] -> [Int]
+combineAll _ [] = []
+combineAll n (x:xs) = foldl (addSums n) x xs
   where
-    addSums acc currentList = acc ++ [a + b | a <- acc, b <- currentList]
+    addSums :: Int -> [Int] -> [Int] -> [Int]
+    addSums maxVal acc currentList =
+      acc ++ [a + b | a <- acc, b <- currentList, a + b <= maxVal]
 
+
+-- all partitions of size 1 to n
+totalPartitions :: Int -> Int
+totalPartitions 0 = 1
+totalPartitions 1 = 1
+totalPartitions n = length (combineAll n (sumer 0 n [2..n]))
+
+-- selected partitions
+selectPartitions :: Int -> [Int] -> Int
+selectPartitions n l = length (combineAll nn (sumer 0 nn llf))
+  where
+    (nn, ll) = reduceValues n l
+    llf = filter (>= 2) ll
+
+
+gcd' :: Int -> Int -> Int
+gcd' x 0 = abs x
+gcd' x y = gcd' y (x `mod` y)
+
+
+gcdList :: [Int] -> Int
+gcdList [] = 0
+gcdList [x] = abs x
+gcdList (x:xs) = gcd' (abs x) (gcdList xs)
+
+
+reduceValues :: Int -> [Int] -> (Int, [Int])
+reduceValues maxVal parts = (newMaxVal, newParts)
+  where
+    commonDivisor = gcdList parts
+    newMaxVal = maxVal `div` commonDivisor
+    newParts = map (`div` commonDivisor) parts
 
 
 main :: IO ()
 main = do
 
-  let maxVal = 300
-  -- let parts = [4, 3, 10]
-  -- let parts = [4,  10]
-  let parts = [5, 25, 10] -- exclude 1
+  let size = 100
+  let parts = [5, 10, 25]
+  -- let (newSize, newParts) = reduceValues size parts
+  -- putStrLn $ "New size: " ++ show newSize
+  -- putStrLn $ "New parts: " ++ show newParts
 
-  let result = sumer 0 maxVal parts
-  print $ result
+  -- print $ selectPartitions newSize newParts
 
-  let pr = pairwiseSums maxVal result
-  print $ pr
-  print $ length pr
+  print $ selectPartitions size parts
+  print $ totalPartitions 22
 
   -- print $ additionsOf 20 4 10
