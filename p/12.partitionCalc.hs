@@ -56,11 +56,14 @@ main = do
 
   let size = 100
   let parts = [5, 10, 25]
-  -- let (newSize, newParts) = reduceValues size parts
-  -- putStrLn $ "New size: " ++ show newSize
-  -- putStrLn $ "New parts: " ++ show newParts
 
-  -- print $ selectPartitions newSize newParts
+  let loop n = do
+        let partitions = totalPartitions n
+        putStrLn $ "Total partitions of " ++ show n ++ ": " ++ show partitions
+        loop (n + 1)
+  loop 0
+
+
 
   print $ selectPartitions size parts
   print $ totalPartitions 22
