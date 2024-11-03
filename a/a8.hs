@@ -5,7 +5,7 @@
 -- DB type class. In addition to getting some sort-of practical experience with
 -- type classes, you'll also get more experience with IO in Haskell.
 
--- module GraderBase where
+-- module GraderBase where -- told to remove by professor
 
 
 
@@ -20,7 +20,7 @@ class DB a where
   query :: a -> PrimaryKey -> ColName -> String -- "" if key not present
   update :: a -> PrimaryKey -> ColName -> String -> a -- db unchanged if key not found
   addRow :: a -> [String] -> a -- assume row's key not already present in db
-
+  exists :: a -> PrimaryKey -> Bool -- added due to how interaction was enforced by assignment
 
 
 
@@ -41,6 +41,10 @@ prompt str = do
 -- lines a user would input, and the second gives the collected output, which
 -- includes all the prompts.
 
+
+
+
+
 dbUI :: (DB a, Show a) => a -> IO ()
 dbUI db = do
 
@@ -50,28 +54,38 @@ dbUI db = do
 
     "query" -> do
       key <- prompt "Primary key"
-      col <- prompt "Column name"
-      putStrLn $ "Query result: " ++ query db key col
+      if exists db key then do -- check for existance before selecting column
+        col <- prompt "Column name"
+        putStrLn $ "Query result: " ++ query db key col
+      else
+        putStrLn "Key not found. NO OP"
       dbUI db
 
     "update" -> do
       key <- prompt "Primary key"
-      col <- prompt "Column name"
-      nv <- prompt "New value"
-      let newDb = update db key col nv
-      putStrLn "Row updated."
-      dbUI newDb
+      if exists db key then do  -- check for existance before selecting column
+        col <- prompt "Column name"
+        nv <- prompt "New value"
+        let newDb = update db key col nv
+        putStrLn "Row updated."
+        dbUI newDb
+      else
+        putStrLn "Key not found. NOOP"
+      dbUI db
 
     "addRow" -> do
-      rowValues <- prompt "input row values separated by spaces"
+      rowValues <- prompt "Input row values separated by spaces"
       let row = words rowValues
-      if length row == 3 then
+      if exists db (row !! 0) then -- check for existance before selecting column
+        putStrLn "key found, enter a new 3-tuple with unique key. NOOP"
+      else if length row == 3 then
         do
           let newRow = addRow db row
-          putStrLn "row added."
+          putStrLn "Row added."
           dbUI newRow
       else
-        putStrLn "invalid: expected 3 values (name, age, accountBalance). NOOP"
+        putStrLn "Invalid: expected 3 values (name, age, accountBalance). NOOP"
+      dbUI db
 
     "print" -> do
       putStrLn (show db)
@@ -132,22 +146,6 @@ instance DB Customers where
 
   query (Customers []) _ _ = "" -- clears non exhaustive
 
-  -- query (Customers (c:cs)) key col =
-  --   if name c == key then
-  --     case col of
-  --       "age" -> show (age c)
-  --       "accountBalance" -> show (accountBalance c)
-  --       _ -> "Invalid column name"
-  --   else
-  --     query (Customers cs) key col
-
-  -- query (Customers cs) key col =
-  -- case findBy (\c -> name c == key) cs of
-  --   Just c -> case col of
-  --     "age" -> show (age c)
-  --     "accountBalance" -> show (accountBalance c)
-  --     _ -> "Invalid column name"
-  --   Nothing -> ""
 
   query (Customers cs) key col =
     case findBy (isMatchingKey key) cs of
@@ -157,42 +155,8 @@ instance DB Customers where
         _ -> "Invalid column name"
       Nothing -> ""
 
-
-  -- update (Customers cs) key col nv =
-  --   case findBy (isMatchingKey key) cs of
-  --     Just c -> case col of
-  --       "age" -> show (age c)
-  --       "accountBalance" -> show (accountBalance c)
-  --       _ -> "Invalid column name"
-  --     Nothing -> ""
-
-
-  -- update (Customers cs) key col nv =
-  --   Customers (map updateCustomer cs)
-  --   where
-  --     updateCustomer customer
-  --       | name customer == key =
-  --           case col of
-  --             "age" -> customer { age = read nv }
-  --             "accountBalance" -> customer { accountBalance = read nv }
-  --             _ -> customer
-  --       | otherwise = customer
-
-  -- update :: Customers -> PrimaryKey -> ColName -> String -> Customers
-  -- update (Customers cs) key col newValue =
-  --   case findBy (isMatchingKey key) cs of
-  --     Just c  -> Customers (map (applyUpdate c) cs)
-  --     Nothing -> Customers cs
-
-  --   where
-  --     applyUpdate customer c
-  --       | name c == name customer =
-  --           case col of
-  --             "age"             -> c { age = read newValue :: Int }
-  --             "accountBalance"  -> c { accountBalance = read newValue :: Double }
-  --             _                 -> c
-  --       | otherwise = c
-
+  -- cant make this print a column error anywhere because haskell.
+  -- not required based on specifications.
   update (Customers cs) key col newValue =
     case findBy (isMatchingKey key) cs of
       Just customer -> Customers (updatedCustomer : otherCustomers)
@@ -205,8 +169,6 @@ instance DB Customers where
           otherCustomers = filter (not . isMatchingKey key) cs  -- readd rest
       Nothing -> Customers cs
 
-
-
   addRow (Customers cs) row =
     let
       name = row !! 0 :: String
@@ -214,6 +176,12 @@ instance DB Customers where
       balance = read (row !! 2) :: Double
       newCustomer = Customer name age balance
     in Customers (newCustomer : cs)
+
+  -- added because we need to check outside of this instance
+  exists (Customers cs) key =
+    case findBy (isMatchingKey key) cs of
+      Just _ -> True
+      Nothing -> False
 
 db :: Customers
 db = empty
