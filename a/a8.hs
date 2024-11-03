@@ -143,10 +143,7 @@ isMatchingKey key c = name c == key
 instance DB Customers where
   empty = Customers []
 
-
-  query (Customers []) _ _ = "" -- clears non exhaustive
-
-
+  query (Customers []) _ _ = "" -- clears non exhaustive warning
   query (Customers cs) key col =
     case findBy (isMatchingKey key) cs of
       Just c -> case col of
@@ -155,7 +152,7 @@ instance DB Customers where
         _ -> "Invalid column name"
       Nothing -> ""
 
-  -- cant make this print a column error anywhere because haskell.
+  -- cant make this print a column error anywhere but it does check
   -- not required based on specifications.
   update (Customers cs) key col newValue =
     case findBy (isMatchingKey key) cs of
@@ -177,7 +174,7 @@ instance DB Customers where
       newCustomer = Customer name age balance
     in Customers (newCustomer : cs)
 
-  -- added because we need to check outside of this instance
+  -- added because I want to check for existance outside of this instance
   exists (Customers cs) key =
     case findBy (isMatchingKey key) cs of
       Just _ -> True
