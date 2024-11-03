@@ -23,8 +23,17 @@ member x (Entry y _ d) | x == y = True
 member x (Entry _ _ d) = member x d
 
 
+
+
+
+
+
+
 main :: IO ()
 main = do
 
   putStrLn "member"
   print $ member "a" dict1
+
+  print $ words "hey there"
+  print $ unwords ["hey", "there"]

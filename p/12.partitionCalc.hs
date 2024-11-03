@@ -55,13 +55,13 @@ main :: IO ()
 main = do
 
   let size = 100
-  let parts = [5, 10, 25]
+  let parts = [10]
 
-  let loop n = do
-        let partitions = totalPartitions n
-        putStrLn $ "Total partitions of " ++ show n ++ ": " ++ show partitions
-        loop (n + 1)
-  loop 0
+  -- let loop n = do
+  --       let partitions = totalPartitions n
+  --       putStrLn $ "Total partitions of " ++ show n ++ ": " ++ show partitions
+  --       loop (n + 1)
+  -- loop 0
 
 
 
