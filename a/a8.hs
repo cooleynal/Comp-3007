@@ -1,3 +1,7 @@
+-- Nick Cooley
+-- 101021174
+-- 03 November 24
+
 -- Assignment 8
 --
 -- In this assignment you will implement a simple database user interface. The
