@@ -31,7 +31,7 @@ C:\Users\tr>set PATH=C:\Users\tr\AppData\Local\Programs\stack\x86_64-windows\ghc
 
 cabal install pretty-simple -v
 C:\Users\tr>stack install pretty-simple
-
+C:\Users\tr>cabal install pretty-simple
 
 C:\Users\tr\AppData\Local\Programs\stack\x86_64-windows\ghc-9.6.6\bin
 C:\cabal\bin
