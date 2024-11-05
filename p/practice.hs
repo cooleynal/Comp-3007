@@ -7,24 +7,6 @@ import Data.Ord (comparing)
 -- and map
 
 
-
--- > (!!) [1, 2, 3] 2
--- 3
--- ghci> mf = flip (!!) 1
--- map mf [[1, 2, 3], [4,5,6]]
-
--- ghci> mf [1, 2, 3, 4, 5]
--- 2
-
-
--- mf = flip (!!) 1
--- mf1 = map mf [[1, 2, 3], [4,5,6]]
-
-
-
-
--- List = 1:2:3:[]
-
 data Dict = Mt | Entry String String Dict
   deriving (Show)
 
@@ -56,12 +38,6 @@ rmd :: Dict -> Dict
 rmd Mt = Mt
 rmd (Entry k v p) = Entry k v (rmd (rmdHelper k p))
 -- rmd (Entry k v p) = Entry k v (rmdHelper k (rmd p))
-
-
-
-
-
-
 
 
 
@@ -106,9 +82,6 @@ append (Entry k v p) dict2 = Entry k v (append p dict2)
 
 
 
-
-
-
 -- getsecond
 getsecond :: Dict -> Dict
 getsecond Mt = Mt
@@ -123,7 +96,9 @@ apd Mt Mt = Mt
 apd (Entry k1 v1 p1) x = Entry k1 v1 (apd p1 x)
 
 
-data DB = DB [[Int]] deriving (Show)
+data DB = DB [[Int]]
+  deriving (Show)
+
 db :: DB
 db =
   DB
@@ -139,11 +114,36 @@ db =
     , [10, 1223, 1398, 1466, 876]
     ]
 
--- sum $ mf1
+
+
+sc :: DB -> [Int]
+sumColumns rows = foldr (zipWith (+)) (replicate (length (head rows)) 0) rows
+
+sumByColumn :: DB -> [Int]
+sumByColumn (DB rows) = sumColumns rows
+
+
+
+-- sumColumns :: [[Int]] -> [Int]
+-- sumColumns rows = foldr (zipWith (+)) (replicate (length (head rows)) 0) rows
+
+
+-- sumByColumn :: [[Int]] -> [Int]
+-- sumByColumn db = foldr addColumns (replicate (maxColumns db) 0) db
+--   where
+--     maxColumns :: [[Int]] -> Int
+--     maxColumns = maximum . map length
+
+--     addColumns :: [Int] -> [Int] -> [Int]
+--     addColumns row sums = zipWith (+) (row ++ repeat 0) sums
+
+
+
 sumColumns :: [[Int]] -> [Int]
 sumColumns rows = foldr (zipWith (+)) (replicate (length (head rows)) 0) rows
 
-
+sumByColumn :: DB -> [Int]
+sumByColumn (DB rows) = sumColumns rows
 
 
 

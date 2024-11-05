@@ -84,8 +84,8 @@ splitR :: (a -> Bool) -> [a] -> ([a], [a])
 splitR p [] = ([], [])
 splitR p (x : l) =
   if p x then (x : l1, l2) else (l1, x : l2)
-  where
-    (l1, l2) = splitR p l
+ where
+  (l1, l2) = splitR p l
 
 setEq :: (Eq a) => [a] -> [a] -> Bool
 setEq l0 l1 = all (`elem` l0) l1 && all (`elem` l1) l0
