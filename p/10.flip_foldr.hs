@@ -36,9 +36,16 @@ filter f l = foldr fapply nil l
 -- function (x : xs) acc = functionxs
 -- (updateAccumulatorBasedOn(x, acc))
 
+myFunc :: Num a => a -> a -> a
+myFunc x y = x + 3 * y
+
+
 main :: IO ()
 main = do
   putStrLn ""
 
   let q2 = filter (flip fm 1) eg
   print q2
+
+  let flippedFunc = flip myFunc
+  print (flippedFunc 5 10)

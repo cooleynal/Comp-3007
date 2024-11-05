@@ -59,8 +59,9 @@ data MyList = Empty | Cons String MyList
   deriving (Show)
 
 firstElement :: MyList -> String
-firstElement Empty = ""  -- Return an empty string if the list is empty
-firstElement (Cons x _) = x  -- Return the first element if the list is non-empty
+firstElement Empty = ""
+firstElement (Cons x _) = x
+
 
 myEmptyList :: MyList
 myEmptyList = Empty
@@ -162,6 +163,193 @@ sumer (DB rows) =
 
 
 
+data Dict = Mt | Entry String String Dict
+  deriving (Show)
+
+eg :: Dict
+eg = Entry "Bingo" "Bongo" (Entry "Baz" "Ola" (Entry "Big" "Deal" Mt))
+eg1 :: Dict
+eg1 = Entry "Bingo" "Bongo" (Entry "Baz" "Ola" (Entry "Bingo" "Deal" Mt))
+
+
+-- firstKey eg = "Bingo"
+firstKey :: Dict -> String -- firstKey is a function with Dict input and String output
+firstKey Mt = ""
+firstKey (Entry k v p) = k
+
+-- firstValue eg = "Bongo"
+firstValue :: Dict -> String
+firstValue Mt = ""
+firstValue (Entry k v p) = v
+
+-- removeFirst eg = Entry "Baz" "Ola" (Entry "Big" "Deal" Mt)
+removeFirst :: Dict -> Dict
+removeFirst Mt = Mt
+removeFirst (Entry k v p) = p
+
+
+stringify :: Dict -> String
+stringify Mt = ""
+stringify (Entry k v Mt)  = k ++ ":" ++ v
+stringify (Entry k v p)   = k ++ ":" ++ v ++ "," ++ stringify p
+
+-- stringify :: Dict -> String
+-- stringify Mt = ""
+-- stringify (Entry key value point) = key ++ ":" ++ value ++ check point
+--     where
+--         check Mt = ""
+--         check r = "," ++ (stringify r)
+
+
+
+-- rev eg = Entry "Bongo" "Bingo" (Entry "Ola" "Baz" (Entry "Deal" "Big" Mt))
+rev :: Dict -> Dict
+rev Mt = Mt
+rev (Entry k v p) = Entry v k (rev p)
+
+-- reverse list
+-- rev2 eg
+rev2 :: Dict -> Dict
+rev2 dict = rev2h dict Mt
+
+rev2h :: Dict -> Dict -> Dict
+rev2h Mt acc = acc
+rev2h (Entry k v p) acc = rev2h p (Entry k v acc)
+
+rev3 :: Dict -> Dict
+rev3 dict = rev3h dict Mt
+  where
+    rev3h Mt acc = acc
+    rev3h (Entry k v p) acc = rev3h p (Entry k v acc)
+
+rev4 :: Dict -> Dict
+rev4 dict =
+  let
+    rev4h Mt acc = acc
+    rev4h (Entry k v p) acc = rev4h p (Entry k v acc)
+  in
+    rev4h dict Mt
+
+
+-- find "Baz" eg = "Ola"
+-- find "Egaah" eg = ""
+find :: String -> Dict -> String -- find is a function with two inputs and String output
+find s Mt = ""
+find s (Entry k v p)
+  | s == k = v
+  | s == v = k
+  | otherwise = find s p
+
+-- find :: String -> Dict -> String
+-- find _ Mt = ""
+-- find target_key (Entry key value point)
+--     | target_key == key = value
+--     | otherwise = (find target_key point)
+
+
+-- Replace all occurrences (as a key or a value) of badWord by "###"
+-- censor "Ola" eg = Entry "Bingo" "Bongo" (Entry "Baz" "###"" (Entry "Big" "Deal" Mt))
+-- censor "Baz" (censor "Ola" eg) = Entry "Bingo" "Bongo" (Entry "###" "###"" (Entry "Big" "Deal" Mt))
+-- censor "Baz" eg
+
+censor :: String -> Dict -> Dict
+censor _ Mt = Mt
+censor s (Entry k v p) = Entry (hider k) (hider v) (censor s p)
+  where
+    hider candidate =
+      if candidate == s then "###"
+      else candidate
+
+
+-- censor :: String -> Dict -> Dict
+-- censor x Mt = Mt
+-- censor x (Entry k y d) =
+--   Entry (if k == x then "###" else k) (if y == x then "###" else y) (censor x d)
+
+
+
+censor1 :: String -> Dict -> Dict
+censor1 s Mt = Mt
+censor1 s (Entry k v p) = Entry (hider k) v (censor1 s p)
+  where
+    hider candidate
+      | candidate == s = "###"
+      | otherwise = candidate
+
+
+-- remove "Bingo" eg
+remove :: String -> Dict -> Dict
+remove _ Mt = Mt
+remove s (Entry k v p)
+  | s == k || s == v  = remove s p
+  | otherwise         = Entry k v (remove s p)
+
+
+-- remove :: String -> Dict -> Dict
+-- remove x Mt = Mt
+-- remove x (Entry k y d) =
+--   if x == k
+--     then remove x d
+--     else Entry k y (remove x d)
+
+
+-- removeDoubles (Entry "Bingo" "Bongo" (Entry "Baz" "Ola" (Entry "Bingo" "Deal" Mt)))
+-- = Entry "Bingo" "Bongo" (Entry "Baz" "Ola" Mt)
+removeDoubles :: Dict -> Dict
+removeDoubles Mt = Mt
+removeDoubles (Entry k v p) = Entry k v (remove k (removeDoubles p))
+
+
+-- removeDoubles :: Dict -> Dict
+-- removeDoubles = collector [] where
+--     collector :: [String] -> Dict -> Dict
+--     collector _ Mt = Mt
+--     collector seenKeys (Entry key value point)
+--         | key `elem` seenKeys = (collector seenKeys point)
+--         | otherwise = Entry key value (collector (key : seenKeys) point)
+
+
+-- Specification:
+-- 1) for every key k and dictionaries d1 and d2,
+--    find k (combine d1 d2) = find k d1  -- if (find k d1) is not ""
+--    find k (combine d1 d2) = find k d2  -- otherwise
+-- 2) removeDoubles (combine d1 d2) = combine d1 d2
+
+-- combine eg eg1
+-- combine :: Dict -> Dict -> Dict
+-- combine Mt Mt = Mt
+-- combine Mt m2 = combine m2 Mt
+-- combine (Entry k1 v1 p1) m2 = Entry k1 v1 (combine p1 m2)
+
+combine :: Dict -> Dict -> Dict
+combine Mt Mt = Mt
+combine Mt m2 = m2
+combine m1 Mt = m1
+combine (Entry k1 v1 p1) m2 = Entry k1 v1 (combine p1 m2)
+
+
+-- combine :: Dict -> Dict -> Dict
+-- combine Mt d2 = removeDoubles d2
+-- combine (Entry x y d1) d2 = Entry x y (remove x (combine d1 d2))
+
+
+findr :: String -> Dict -> Bool
+findr _ Mt = False
+findr s (Entry k _ p)
+    | s == k    = True
+    | otherwise = findr s p
+
+
+
+
+
+combiner :: Dict -> Dict -> Dict
+combiner m1 m2 = removeDoubles ( combine m1 m2)
+
+
+
+
+
 
 
 main :: IO ()
@@ -225,3 +413,16 @@ main = do
   putStrLn "Checking if all elements of [1, 2, 3] are in [1, 2, 3, 4]:"
   print $ all (`elem` [1, 2, 3, 4]) [1, 2, 3]
   putStrLn ""
+
+  putStrLn (firstKey eg)
+  putStrLn (firstValue eg)
+  putStrLn (stringify (removeFirst eg))
+  putStrLn (stringify eg)
+  putStrLn (stringify (rev eg))
+  putStrLn (stringify (rev2 eg))
+  putStrLn (stringify (rev3 eg))
+  putStrLn (stringify (rev4 eg))
+  putStrLn (find "Baz" eg)
+  putStrLn (find "Ola" eg)
+  putStrLn (stringify (censor1 "Baz" eg))
+  putStrLn (stringify (remove "Baz" eg))

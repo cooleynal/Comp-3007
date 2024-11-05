@@ -117,35 +117,7 @@ db =
 
 
 sc :: DB -> [Int]
-sumColumns rows = foldr (zipWith (+)) (replicate (length (head rows)) 0) rows
-
-sumByColumn :: DB -> [Int]
-sumByColumn (DB rows) = sumColumns rows
-
-
-
--- sumColumns :: [[Int]] -> [Int]
--- sumColumns rows = foldr (zipWith (+)) (replicate (length (head rows)) 0) rows
-
-
--- sumByColumn :: [[Int]] -> [Int]
--- sumByColumn db = foldr addColumns (replicate (maxColumns db) 0) db
---   where
---     maxColumns :: [[Int]] -> Int
---     maxColumns = maximum . map length
-
---     addColumns :: [Int] -> [Int] -> [Int]
---     addColumns row sums = zipWith (+) (row ++ repeat 0) sums
-
-
-
-sumColumns :: [[Int]] -> [Int]
-sumColumns rows = foldr (zipWith (+)) (replicate (length (head rows)) 0) rows
-
-sumByColumn :: DB -> [Int]
-sumByColumn (DB rows) = sumColumns rows
-
-
+sc (DB rows) = foldr (zipWith (+)) (replicate (length (head rows)) 0) rows
 
 
 
@@ -232,9 +204,34 @@ sbs1 = sortBy (comparing snd)
 
 
 
+append' :: [a] -> [a] -> [a]
+append' x y = x ++ y
 
--- mfz = zz 2
--- mfz 11
--- 13
-zz :: Num a => a -> a -> a
-zz x y = x + y
+
+eg :: String
+eg = append' ("a" ++ "b") "c"
+
+
+addThree :: Int -> Int
+addThree a = a+ 3
+
+
+-- result :: [Int]
+-- result = map addThree [1, 2, 3]
+result :: [Int] -> [Int]
+result w = map (\x->x+3) w
+
+
+-- filter` isEven [1, 2, 3]
+filter' :: (a -> Bool) -> [a] -> [a]
+filter' p = foldr (\x acc -> if p x then x : acc else acc) []
+
+-- isEven :: (Integral a) => a -> Bool
+-- isEven num
+--     | num `mod` 2 == 0      = True
+--     | otherwise             = False
+
+isEven :: (Integral a) => a -> Bool
+isEven num
+    | num `mod` 2 == 0      = True
+    | otherwise             = False

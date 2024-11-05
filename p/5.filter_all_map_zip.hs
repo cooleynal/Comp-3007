@@ -171,6 +171,13 @@ l2 :: [Integer]
 l2 = [1, 1, 1, 1, 1, 1, 1, 1, 3]
 
 
+
+
+
+
+
+
+
 main :: IO ()
 main = do
     -- Test isGr function
