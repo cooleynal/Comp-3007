@@ -117,73 +117,8 @@ getRow index db = db !! index
 
 
 
--- class Monad m where
---   (>>=) :: t a -> (a -> t b) -> t b -- the "bind" operator -- ???
---   (>>) :: t a -> t b -> t b -- just a special case of the bind operator
---   return :: a -> t a -- insert a value
-
---   instance Monad Maybe where
---     -- (>>=) :: Maybe a -> (a -> Maybe b) -> Maybe b
---     Just x >>= f = f x
---     Nothing >>= f = Nothing
---     -- return :: a -> Maybe a
---     return x = Just x
---     instance Monad IO where
---     (>>=) :: IO a -> (a -> IO b) -> IO b = ...
---     return :: a -> IO a = ...
-
---   do
---     x1 <- e1 e1 >>= (\x1 ->
---     x2 <- e2 e2 >>= (\x2 ->
---     ... ===> ...
---     xn <- en en >>= (\xn ->
---     e
-
---   do
---     x <- [1,2,3]
---     y <- [4,5,6]
---     return (x,y)
 
 
-
-
-class Monad' m where
-  (>>=) :: m a -> (a -> m b) -> m b  -- The "bind" operator
-  (>>) :: m a -> m b -> m b          -- Just a special case of the bind operator
-  return :: a -> m a                  -- Insert a value
-
--- Instance for Maybe
-instance Monad' Maybe where
-    Just x >>= f = f x               -- If Just, apply the function f
-    Nothing >>= _ = Nothing           -- If Nothing, return Nothing
-    return x = Just x                 -- Wrap a value in Just
-    Just _ >> mb = mb                 -- If we have Just a, just return mb
-    Nothing >> _ = Nothing             -- If we have Nothing, return Nothing
-
--- instance Monad' [] where
---   xs >>= f = concatMap f xs        -- Apply f to each element and concatenate results
---   return x = [x]                   -- Wrap a value in a single-element list
---   xs >> ys = concat (map (\_ -> ys) xs) -- For each element in xs, return the list ys
-
-
--- instance Monad' IO where
---   a >>= f = do
---       x <- a                         -- Perform the IO action a and bind the result to x
---       f x                            -- Apply f to x
---   return x = Prelude.return x      -- Use the built-in return for IO
---   a >> b = a >>= \_ -> b           -- Run a and then run b, discarding the result of a
-
-
--- -- Instance for IO
--- instance Monad' IO where
---   a >>= f = do
---     x <- a                         -- Perform the IO action a and bind the result to x
---     f x                            -- Apply f to x
---   return x = Prelude.return x      -- Use the built-in return for IO
-
-
-
--- Main function to demonstrate functionality
 main :: IO ()
 main = do
 
