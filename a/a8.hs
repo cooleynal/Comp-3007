@@ -100,7 +100,9 @@ dbUI db = do
       let newDb = empty :: Customers
       dbUI newDb
 
-    "quit" -> putStrLn "quiting"
+    "quit" -> do
+      putStrLn "quiting"
+      return $ ()
 
     _ -> do
       putStrLn "unknown operation"

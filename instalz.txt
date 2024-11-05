@@ -1,0 +1,38 @@
+download windows version
+https://downloads.haskell.org/~cabal/cabal-install-3.12.1.0/
+
+add C:\ghcup\bin 
+to environment path
+
+(base) C:\Users\tr>cabal --version
+cabal-install version 3.12.1.0
+compiled using version 3.12.1.0 of the Cabal library
+
+cabal update
+
+stack runs from here
+C:\Users\tr\AppData\Local\Programs\stack\x86_64-windows
+
+cabal update
+cabal install pretty-simple --lib
+
+(base) C:\Users\tr>ghcup install cabal
+(base) C:\Users\tr>ghc --version
+
+cabal install pretty-simple
+
+ghcup set ghc 9.6.6
+
+ghcup install ghc 9.6.6
+ghcup set ghc 9.6.6
+cabal --version
+ghc --version
+C:\Users\tr>set PATH=C:\Users\tr\AppData\Local\Programs\stack\x86_64-windows\ghc-9.6.6\bin;%PATH%
+
+cabal install pretty-simple -v
+C:\Users\tr>stack install pretty-simple
+
+
+C:\Users\tr\AppData\Local\Programs\stack\x86_64-windows\ghc-9.6.6\bin
+C:\cabal\bin
+C:\ghcup\bin

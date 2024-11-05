@@ -6,7 +6,7 @@ import Data.Maybe
 import Data.Text (pack, unpack)
 import LispVal qualified as L
 import Parser
--- import Text.Pretty.Simple -- do i need this?
+import Text.Pretty.Simple -- do i need this?
 
 data Exp
   = Atom String
