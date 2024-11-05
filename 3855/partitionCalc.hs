@@ -54,8 +54,8 @@ reduceValues maxVal parts = (newMaxVal, newParts)
 main :: IO ()
 main = do
 
-  let size = 100
-  let parts = [10]
+  let size = 5
+  let parts = [1,2, 4, 5]
 
   -- let loop n = do
   --       let partitions = totalPartitions n
@@ -66,6 +66,6 @@ main = do
 
 
   print $ selectPartitions size parts
-  print $ totalPartitions 22
+  -- print $ totalPartitions 22
 
   -- print $ additionsOf 20 4 10
