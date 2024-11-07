@@ -281,8 +281,31 @@ instance Show Rule where
 -- defined as the value representing the empty list. [2] addresses the second
 -- cons expression, and so [2,1] addresses "(+ 1 2)", which is a redex since
 -- it is not a value but is a function applied to value arguments.
+
+-- nextRedex :: Exp -> Maybe Lens
+-- nextRedex = undefined
+
+-- nextRedex $ List [Atom "cons", Number 1, Number 2]
+
+-- nextRedex (parseExp "(cons (list) (cons (+ 1 2) (list)))")
+-- -- = Just (Lens (...) [2,1])
 nextRedex :: Exp -> Maybe Lens
-nextRedex = undefined
+nextRedex e =
+  case e of
+    List (f : args)
+      | all isValue args  -> Just (Lens e [])
+      | otherwise         -> findInArgs args
+    _ -> Nothing
+  where
+    findInArgs :: [Exp] -> Maybe Lens
+    findInArgs (a:as)
+      | not (isValue a)   = Just (Lens a [])
+      | otherwise         = findInArgs as
+    findInArgs [] = Nothing
+
+
+
+
 
 -- A "standard" rule is a rule whose ruleRhs is an expression. The function
 -- takes strings as arguments and parses them.
