@@ -13,8 +13,7 @@ cabal update
 stack runs from here
 C:\Users\tr\AppData\Local\Programs\stack\x86_64-windows
 
-cabal update
-cabal install pretty-simple --lib
+
 
 (base) C:\Users\tr>ghcup install cabal
 (base) C:\Users\tr>ghc --version
@@ -40,12 +39,20 @@ stack ghci --package extra
 import Data.List.Extra (unsnoc)
 unsnoc [1, 2, 3]
 
-stack ghci --package extra --ghci-options a9.hs
 
-PS C:\Users\tr\Desktop\Comp-3007\a> cd "c:\Users\tr\Desktop\Comp-3007\a"
-PS C:\Users\tr\Desktop\Comp-3007\a> stack ghci --ghci-options a9.hs
+
+
 
 
 C:\Users\tr\AppData\Local\Programs\stack\x86_64-windows\ghc-9.6.6\bin
 C:\cabal\bin
 C:\ghcup\bin
+
+
+hlint
+C:\Users\tr\AppData\Roaming\local\bin\hlint.exe
+
+stack install hlint
+stack install pretty-simple
+stack ghci a9.hs
+stack runghc a9.hs

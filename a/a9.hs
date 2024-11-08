@@ -331,14 +331,57 @@ compileDef (List [Atom "define", lhs@(List (Atom f : vars)), e]) =
   Rule {ruleLhs = lhs, ruleRhs = Left e}
 compileDef e = error $ "compileDef: not a def " ++ show e
 
+
 -- matchPat lhs rhs: find a substitution s such that subst lhs = rhs.
+-- matchPat :: Exp -> Exp -> Maybe Subst
+-- matchPat = undefined
+
+
+-- matchPat lhs rhs: find a substitution s such that subst lhs = rhs.
+-- matchPat (Atom "x") (Atom "foo")
 matchPat :: Exp -> Exp -> Maybe Subst
-matchPat = undefined
+matchPat (Atom var) rhs = Just (extend var rhs empty)
+matchPat (Number n1) (Number n2)
+  | n1 == n2  = Just empty
+matchPat (String n1) (String n2)
+  | n1 == n2  = Just empty
+matchPat (Bool n1) (Bool n2)
+  | n1 == n2  = Just empty
+matchPat Nil Nil = Just empty
+matchPat (List (Atom f : argsLhs)) (List (Atom f' : argsRhs))
+  | f == f' = matchPats argsLhs argsRhs
+matchPat _ _ = Nothing
+
+
+
+
+
+
+
+
+
 
 -- matchPats lhss rhss: find a substitution s such that subst lhs = rhs for each
 -- corresponding pair of elements in lhss and rhss.
+-- matchPats :: [Exp] -> [Exp] -> Maybe Subst
+-- matchPats = undefined
+
+
+-- matchPats [Atom "a", Atom "b"] [Atom "a", Atom "c"]
 matchPats :: [Exp] -> [Exp] -> Maybe Subst
-matchPats = undefined
+matchPats [] [] = Just empty
+matchPats (x:xs) (y:ys) = do
+  s1 <- matchPat x y
+  let xs' = map (subst s1) xs
+      ys' = map (subst s1) ys
+  s2 <- matchPats xs' ys'
+  return (merge s1 s2)
+matchPats _ _ = Nothing
+
+
+
+
+
 
 -- Try to match e to the rule's lhs and return the result of applying the matching
 -- substitution, if one was found, to the rhs.
@@ -485,3 +528,10 @@ p =
 pExp = programExp p
 
 pRules = map compileDef (programDefs p) ++ builtinRules
+
+
+-- runStepper p
+--  runStepper [[(list 1 2 3)]]
+
+-- let program = unlines    [ "(define (square x) (* x x))"    , "(square 5)"    ]
+
