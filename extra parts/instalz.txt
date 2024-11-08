@@ -1,0 +1,68 @@
+PS C:\Users\tr> rm ~/APPDATA/Roaming/Code
+PS C:\Users\tr> rm ~/.vscode
+
+C:\Users\tr\AppData\Roaming\local\bin\
+C:\Users\tr\AppData\Roaming\stack
+C:\Users\tr\AppData\Local\Programs\stack\x86_64-windows\ghc-9.6.6\bin
+C:/ghcup\ghc\9.4.8"
+C:\ghcup\msys64
+C:\\cabal]
+
+-- shits mostly here
+C:\ghcup\bin
+
+
+-- ONLY USE STACK
+PS C:\Users\tr\Desktop\Comp-3007\a> stack-3.1.1 install pretty-simple
+PS C:\Users\tr\Desktop\Comp-3007\a> stack-3.1.1 install extra
+
+-- in C:\ghcup\bin make a copy of stack 3.1.1 and name it stack
+This lets u run with buttons
+
+
+ONLY INSTALL following 3 (4) extensions
+Haskell - Haskell
+	Haskell language support powered by the Haskell Language Server
+Haskell Syntax Highlighting - Justus Adam
+	Syntax support for the Haskell programming language.
+Haskelly - UCL
+	Complete support for casual and expert Haskell development.
+
+maybe WSL ? who knows
+
+
+
+
+
+
+
+--- rest is dump
+
+
+
+
+
+
+
+ghcup set ghc 9.6.6
+ghcup install ghc 9.6.6
+ghcup set ghc 9.6.6
+cabal --version
+ghc --version
+
+
+cabal install pretty-simple -v
+C:\Users\tr>stack install pretty-simple
+C:\Users\tr>cabal install pretty-simple
+PS C:\Users\tr\Desktop\Comp-3007\a> cabal install extra
+
+
+]
+
+hlint
+C:\Users\tr\AppData\Roaming\local\bin\hlint.exe
+
+stack install hlint
+stack install pretty-simple
+stack ghci a9.hs
+stack runghc a6.hs
