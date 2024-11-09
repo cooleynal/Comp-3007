@@ -1,3 +1,7 @@
+runghc -i"C:\Users\tr\Desktop\Comp-3007\a\syntax.hs" a9.hs
+C:\Users\tr\Desktop\Comp-3007\a\a9.hs
+
+
 PS C:\Users\tr> rm ~/APPDATA/Roaming/Code
 PS C:\Users\tr> rm ~/.vscode
 

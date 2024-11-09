@@ -2,11 +2,10 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 
+-- import Debug.Trace (trace)
 -- Check out the imported functions. You might find them useful. Also, take a
 -- look at the bottom of the file for some useful general utilities.
-import Data.List.Extra (unsnoc)
 import Data.List (findIndex, nub)
-
 import Data.Map qualified as M
 import Data.Maybe (fromJust, isJust, mapMaybe)
 import Data.Text (pack, unpack) -- needed but you can ignore them
@@ -20,7 +19,10 @@ import Text.Pretty.Simple (pPrint) -- you can delete this line, but pPrint is ha
 -- Scheme abstract syntax
 -- Nothing for you to do here, but you will need to know it all.
 -----------------------------------------------------------------
--- asdf
+
+myunsnoc :: [a] -> Maybe ([a], a)
+myunsnoc = foldr (\x -> Just . maybe ([], x) (\(~(a, b)) -> (x : a, b))) Nothing
+
 -- ASTs for Scheme expressions
 data Exp
   = Atom String
@@ -84,7 +86,7 @@ parseRawProgram str =
         then
           error "parseProgram: empty program"
         else
-          let (defs, e) = fromJust (unsnoc es)
+          let (defs, e) = fromJust (myunsnoc es)
            in Program defs e
 
 -- All non-empty List objects must start with an atom. E.g. "(cons 1 2)" is well-formed,
@@ -134,8 +136,6 @@ unparseExp (String str) = show str
 unparseExp Nil = "'()"
 unparseExp (Bool True) = "#t"
 unparseExp (Bool False) = "#f"
-
-
 
 unparseProgram :: Program -> String
 unparseProgram (Program defs e) = concatMap unparseExp defs ++ unparseExp e
@@ -197,8 +197,29 @@ set' (Lens e ks) e0 = error $ "getUsingPath: " ++ show ks ++ show e
 replaceNth :: Int -> a -> [a] -> [a]
 replaceNth n x xs = take n xs ++ [x] ++ drop (n + 1) xs
 
+-- findSubexp :: (Exp -> Bool) -> Exp -> Maybe Lens
+-- findSubexp = undefined
+
+
+
 findSubexp :: (Exp -> Bool) -> Exp -> Maybe Lens
-findSubexp = undefined
+findSubexp f exp = findLens exp exp []
+  where
+    findLens :: Exp -> Exp -> Path -> Maybe Lens
+    findLens original e path
+      | f e = Just (Lens original path)
+      | otherwise = case e of
+          List elements -> 
+            foldl (\acc (subExp, idx) -> 
+                    case acc of
+                      Just lens -> Just lens
+                      Nothing -> findLens original subExp (path ++ [idx])
+                  ) Nothing (zip elements [0..])
+          Atom _ -> 
+            if f e then Just (Lens original path) else Nothing
+          _ -> Nothing
+          
+
 
 -- Produce a string for the expression as in unparseExp, but enclose the
 -- expression addressed by the path with "[[" and "]]".
@@ -283,29 +304,27 @@ instance Show Rule where
 -- defined as the value representing the empty list. [2] addresses the second
 -- cons expression, and so [2,1] addresses "(+ 1 2)", which is a redex since
 -- it is not a value but is a function applied to value arguments.
-
 -- nextRedex :: Exp -> Maybe Lens
 -- nextRedex = undefined
 
--- nextRedex $ List [Atom "cons", Number 1, Number 2]
 
--- nextRedex (parseExp "(cons (list) (cons (+ 1 2) (list)))")
--- -- = Just (Lens (...) [2,1])
+
+-- passes test but breaks runProgram
+
 nextRedex :: Exp -> Maybe Lens
-nextRedex e =
-  case e of
-    List (f : args)
-      | all isValue args  -> Just (Lens e [])
-      | otherwise         -> findInArgs args
-    _ -> Nothing
+nextRedex e = findRedex e []
   where
-    findInArgs :: [Exp] -> Maybe Lens
-    findInArgs (a:as)
-      | not (isValue a)   = Just (Lens a [])
-      | otherwise         = findInArgs as
-    findInArgs [] = Nothing
+    findRedex :: Exp -> Path -> Maybe Lens
+    findRedex (List (f : args)) path
+      | all isValue args = Just (Lens e path)
+      | otherwise = findInArgs args path 0
+    findRedex _ _ = Nothing
 
-
+    findInArgs :: [Exp] -> Path -> Int -> Maybe Lens
+    findInArgs [] _ _ = Nothing
+    findInArgs (arg : rest) path index
+      | not (isValue arg) = findRedex arg (path ++ [index + 1])  
+      | otherwise = findInArgs rest path (index + 1)
 
 
 
@@ -333,14 +352,10 @@ compileDef (List [Atom "define", lhs@(List (Atom f : vars)), e]) =
   Rule {ruleLhs = lhs, ruleRhs = Left e}
 compileDef e = error $ "compileDef: not a def " ++ show e
 
-
 -- matchPat lhs rhs: find a substitution s such that subst lhs = rhs.
 -- matchPat :: Exp -> Exp -> Maybe Subst
 -- matchPat = undefined
 
-
--- matchPat lhs rhs: find a substitution s such that subst lhs = rhs.
--- matchPat (Atom "x") (Atom "foo")
 matchPat :: Exp -> Exp -> Maybe Subst
 matchPat (Atom var) rhs = Just (extend var rhs empty)
 matchPat (Number n1) (Number n2)
@@ -359,17 +374,11 @@ matchPat _ _ = Nothing
 
 
 
-
-
-
-
 -- matchPats lhss rhss: find a substitution s such that subst lhs = rhs for each
 -- corresponding pair of elements in lhss and rhss.
 -- matchPats :: [Exp] -> [Exp] -> Maybe Subst
 -- matchPats = undefined
 
-
--- matchPats [Atom "a", Atom "b"] [Atom "a", Atom "c"]
 matchPats :: [Exp] -> [Exp] -> Maybe Subst
 matchPats [] [] = Just empty
 matchPats (x:xs) (y:ys) = do
@@ -379,8 +388,6 @@ matchPats (x:xs) (y:ys) = do
   s2 <- matchPats xs' ys'
   return (merge s1 s2)
 matchPats _ _ = Nothing
-
-
 
 
 
@@ -532,8 +539,80 @@ pExp = programExp p
 pRules = map compileDef (programDefs p) ++ builtinRules
 
 
--- runStepper p
---  runStepper [[(list 1 2 3)]]
 
--- let program = unlines    [ "(define (square x) (* x x))"    , "(square 5)"    ]
+snoc :: Program
+snoc =
+  (parseProgram . unlines)
+    [ "(define (snoc x l)"
+    , "  (if (null? l)"
+    , "      (list x)"
+    , "      (cons (car l) (snoc x (cdr l)))))"
+    , ""
+    , "(snoc 17 (list #t 1 \"bazola\"))"
+    ]
+
+snocResult = "(cons #t (cons 1 (cons \"bazola\" (cons 17 (list)))))"
+
+cons :: Exp -> Exp -> Exp
+cons x y = List [Atom "cons", x, y]
+
+app :: String -> [Exp] -> Exp
+app f args = List (Atom f : args)
+
+tree0 :: Exp
+tree0 =
+  cons
+    (cons (cons (Number 1) (Number 2)) (cons (Number 3) (Number 4)))
+    (cons (cons (Number 5) (Number 6)) (cons (Number 7) (Number 8)))
+
+tree1 :: Exp
+tree1 = lensExp $ set (Lens tree0 [2, 2, 1]) (app "+" [Number 1, app "+" [Number 2, Number 3]])
+
+
+-- given code has name collisions with test code ...
+
+
+main :: IO ()
+main = do
+
+  -- q1
+  print $ "Q1"
+  putStrLn ""
+  print $ findSubexp (== Number 7) tree0
+  -- print $ findSubexp (== (Atom "cons"))
+  putStrLn ""
+  putStrLn ""
+  print $ findSubexp (== (Atom "cons")) tree0
+  putStrLn ""
+  putStrLn ""
+  -- q2
+  print $ "Q2"
+  -- putStrLn "nextRedex lensExp $ set (Lens tree0 [2, 2, 1]) (app \"+\" [Number 1, app \"+\" [Number 2, Number 3]])"
+  print $ nextRedex tree1
+  putStrLn ""
+
+  print $ nextRedex (parseExp "(cons (list) (cons (+ 1 2) (list)))")
+  putStrLn "Just (Lens (...) [2,1])"
+  putStrLn ""
+
+
+
+--   print $ envMap (fromJust (matchPat pat0 inst0))
+
+  -- print $ envMap (fromJust (matchPat pat0 inst0))
+
+
+-- q5
+  putStrLn "Q5"
+  putStrLn "runProgram snoc"
+  print $ runProgram snoc
+  -- print $ "(cons #t (cons 1 (cons \"bazola\" (cons 17 (list)))))"
+  putStrLn "should be: (cons #t (cons 1 (cons \"bazola\" (cons 17 (list)))))"
+  pPrint tree0
+
+  -- runProgram snoc gives ""(if #f (cons 17 (list)) (cons #t (if #f (cons 17 (list)) (cons 1 (if #f (cons 17 (list)) (cons \"bazola\" (if #t (cons 17 (list)) (cons (car (list)) (snoc 17 (cdr (list)))))))))))"" 
+
+  -- THIS IS WRONG DO THIS 
+  -- "(cons #t (cons 1 (cons \"bazola\" (cons 17 (list)))))"
+
 
