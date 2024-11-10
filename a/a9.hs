@@ -8,6 +8,7 @@
 import Data.List (findIndex, nub)
 import Data.Map qualified as M
 import Data.Maybe (fromJust, isJust, mapMaybe)
+-- import Data.Maybe (fromList)
 import Data.Text (pack, unpack) -- needed but you can ignore them
 import Debug.Trace
 import Syntax qualified as S
@@ -25,7 +26,9 @@ myunsnoc = foldr (\x -> Just . maybe ([], x) (\(~(a, b)) -> (x : a, b))) Nothing
 
 -- ASTs for Scheme expressions
 data Exp
-  = Atom String
+  =
+    -- If Exp Exp Exp
+   Atom String
   | List [Exp]
   | Number Int
   | String String
@@ -201,7 +204,6 @@ replaceNth n x xs = take n xs ++ [x] ++ drop (n + 1) xs
 -- findSubexp = undefined
 
 
-
 findSubexp :: (Exp -> Bool) -> Exp -> Maybe Lens
 findSubexp f exp = findLens exp exp []
   where
@@ -209,16 +211,16 @@ findSubexp f exp = findLens exp exp []
     findLens original e path
       | f e = Just (Lens original path)
       | otherwise = case e of
-          List elements -> 
-            foldl (\acc (subExp, idx) -> 
-                    case acc of
-                      Just lens -> Just lens
-                      Nothing -> findLens original subExp (path ++ [idx])
-                  ) Nothing (zip elements [0..])
-          Atom _ -> 
-            if f e then Just (Lens original path) else Nothing
+          List elements -> findInElements original elements path 0
+          Atom _ -> Nothing
           _ -> Nothing
-          
+
+    findInElements :: Exp -> [Exp] -> Path -> Int -> Maybe Lens
+    findInElements _ [] _ _ = Nothing
+    findInElements original (subExp : rest) path index =
+        case findLens original subExp (path ++ [index]) of
+            Just lens -> Just lens
+            Nothing -> findInElements original rest path (index + 1)
 
 
 -- Produce a string for the expression as in unparseExp, but enclose the
@@ -323,8 +325,9 @@ nextRedex e = findRedex e []
     findInArgs :: [Exp] -> Path -> Int -> Maybe Lens
     findInArgs [] _ _ = Nothing
     findInArgs (arg : rest) path index
-      | not (isValue arg) = findRedex arg (path ++ [index + 1])  
+      | not (isValue arg) = findRedex arg (path ++ [index + 1])
       | otherwise = findInArgs rest path (index + 1)
+
 
 
 
@@ -569,7 +572,39 @@ tree1 :: Exp
 tree1 = lensExp $ set (Lens tree0 [2, 2, 1]) (app "+" [Number 1, app "+" [Number 2, Number 3]])
 
 
--- given code has name collisions with test code ...
+-- given code has name collisions with test code ... M.fromlist
+
+
+d :: String -> Exp
+d = parseExp
+
+
+pat0 :: Exp
+pat0 = d "(cons x (cons y (list)))"
+
+inst0 :: Exp
+inst0 = d "(cons 2 (cons (cons z z)  (list)))"
+
+
+pat1 :: Exp
+pat1 = d "(cons (x y) (list))"
+
+inst1 :: Exp
+inst1 = d "(cons (foo 22) (list))"
+
+
+pat2 :: Exp
+pat2 = d "(cons u (cons v 17))"
+
+inst2 :: Exp
+inst2 = d "(cons 3 (cons (cons 3 4) 17))"
+
+s1 :: Subst
+s1 = Env{envMap = M.fromList [("u", Number 3), ("v", List [Atom "cons", Number 3, Number 4]), ("x", Number 2), ("y", List [Atom "cons", Atom "z", Atom "z"])]}
+
+s0 :: Subst
+s0 = Env (M.fromList [("x", Number 2), ("y", List [Atom "cons", Atom "z", Atom "z"])])
+
 
 
 main :: IO ()
@@ -608,11 +643,15 @@ main = do
   print $ runProgram snoc
   -- print $ "(cons #t (cons 1 (cons \"bazola\" (cons 17 (list)))))"
   putStrLn "should be: (cons #t (cons 1 (cons \"bazola\" (cons 17 (list)))))"
-  pPrint tree0
+  print $ runProgram p
 
-  -- runProgram snoc gives ""(if #f (cons 17 (list)) (cons #t (if #f (cons 17 (list)) (cons 1 (if #f (cons 17 (list)) (cons \"bazola\" (if #t (cons 17 (list)) (cons (car (list)) (snoc 17 (cdr (list)))))))))))"" 
+  pPrint snoc
 
-  -- THIS IS WRONG DO THIS 
+  -- pPrint tree0
+
+  -- runProgram snoc gives ""(if #f (cons 17 (list)) (cons #t (if #f (cons 17 (list)) (cons 1 (if #f (cons 17 (list)) (cons \"bazola\" (if #t (cons 17 (list)) (cons (car (list)) (snoc 17 (cdr (list)))))))))))""
+
+  -- THIS IS WRONG DO THIS
   -- "(cons #t (cons 1 (cons \"bazola\" (cons 17 (list)))))"
 
 
