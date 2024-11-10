@@ -26,9 +26,7 @@ myunsnoc = foldr (\x -> Just . maybe ([], x) (\(~(a, b)) -> (x : a, b))) Nothing
 
 -- ASTs for Scheme expressions
 data Exp
-  =
-    -- If Exp Exp Exp
-   Atom String
+  = Atom String
   | List [Exp]
   | Number Int
   | String String
@@ -313,22 +311,103 @@ instance Show Rule where
 
 -- passes test but breaks runProgram
 
+-- nextRedex :: Exp -> Maybe Lens
+-- nextRedex e = findRedex e []
+--   where
+--     findRedex :: Exp -> Path -> Maybe Lens
+--     findRedex (List (f : args)) path
+--       | all isValue args = Just (Lens e path)
+--       | otherwise = findInArgs args path 0
+--     findRedex _ _ = Nothing
+
+--     findInArgs :: [Exp] -> Path -> Int -> Maybe Lens
+--     findInArgs [] _ _ = Nothing
+--     findInArgs (arg : rest) path index
+--       | not (isValue arg) = findRedex arg (path ++ [index + 1])
+--       | otherwise = findInArgs rest path (index + 1)
+
+
+-- parseExp $ unparseExp tree1
+-- Just (Lens {lensExp = List [Atom "cons",List [Atom "cons",List [Atom "cons",Number 1,Number 2],List [Atom "cons",Number 3,Number 4]],List [Atom "cons",List [Atom "cons",Number 5,Number 6],List [Atom "cons",List [Atom "+",Number 1,List [Atom "+",Number 2,Number 3]],Number 8]]], lensPath = [2,2,1,2]})
+
+two :: Exp
+two = List [Atom "cons",List [Atom "cons",Number 5,Number 6],List [Atom "cons",List [Atom "+",Number 1,List [Atom "+",Number 2,Number 3]],Number 8]]
+
 nextRedex :: Exp -> Maybe Lens
-nextRedex e = findRedex e []
+nextRedex e = case findNextRedexPath e of
+  Just path -> Just (Lens e path)
+  Nothing -> Nothing
+
+-- findNextRedexPath :: Exp -> Maybe Path
+-- findNextRedexPath e = case abs e of
+--   fst abs == Nil  -> Nothing
+--   _   -> Just (path e)
+--   where
+--     -- path e = snd (recursive (e, []))
+--     abs e = (recursive (e, []))
+
+
+findNextRedexPath :: Exp -> Maybe Path
+findNextRedexPath e
+  | fst (abs e) == Nil  = Nothing
+  | otherwise       = Just (snd (abs e))
   where
-    findRedex :: Exp -> Path -> Maybe Lens
-    findRedex (List (f : args)) path
-      | all isValue args = Just (Lens e path)
-      | otherwise = findInArgs args path 0
-    findRedex _ _ = Nothing
-
-    findInArgs :: [Exp] -> Path -> Int -> Maybe Lens
-    findInArgs [] _ _ = Nothing
-    findInArgs (arg : rest) path index
-      | not (isValue arg) = findRedex arg (path ++ [index + 1])
-      | otherwise = findInArgs rest path (index + 1)
+    abs e = recursive (e, [])
 
 
+-- recursive (List [Atom "+",Number 2,Number 3], [])
+-- recursive (List [Atom "cons",List [Atom "+",Number 1,List [Atom "+",Number 2,Number 3]]], [])
+
+-- recursive (tree1, [])
+
+recursive :: (Exp, Path) -> (Exp, Path)
+recursive (List [_, List l1, List l2], p ) =
+  let
+    path1 = recursive (List l1, 1 : p)
+    path2 = recursive (List l2, 2 : p)
+  in
+    if fst path1 == Nil
+      then path2
+    else path1
+
+recursive (e, p) | isReducible e   = (e, reverse $ p) -- is found return list
+recursive (List [_, List l, _], p ) = recursive (List l, 1 : p)
+recursive (List [_, List l], p ) = recursive (List l, 1 : p)
+recursive (List [_, _, List l], p ) = recursive (List l, 2 : p)
+
+recursive _ = (Nil, [])
+
+-- is reducible true  == return path
+-- is redicuble false == explore remaining lists look for new expression
+
+-- List [Atom "cons",List [Atom "+",Number 1,List [Atom "+",Number 2,Number 3]]
+
+-- List [Atom "+",Number 2,Number 3]
+-- isReducible (List [Atom "cons",Number 1,Number 2])
+-- might not find path
+isReducible :: Exp -> Bool
+isReducible (List [Atom "+", Number n1, Number n2]) = True
+isReducible (List [Atom "snoc", _, _]) = True
+-- isReducible (List [_, _, _]) = False
+isReducible _ = False
+
+psnoc :: Exp
+psnoc = programExp snoc
+
+-- ghci> recursive (psnoc, [])
+
+rps :: Lens
+rps =  Lens psnoc []
+
+srules :: [Rule]
+srules = builtinRules ++ programRules snoc
+-- reduce1 srules rps
+
+-- ghci> programExp snoc
+-- List [Atom "snoc",Number 17,List [Atom "list",Bool True,Number 1,String "bazola"]]
+-- ghci>
+
+-- ghci> unparseExp $ fromJust (reduce1 srules rps)
 
 
 -- A "standard" rule is a rule whose ruleRhs is an expression. The function
@@ -359,19 +438,27 @@ compileDef e = error $ "compileDef: not a def " ++ show e
 -- matchPat :: Exp -> Exp -> Maybe Subst
 -- matchPat = undefined
 
+-- matchPat :: Exp -> Exp -> Maybe Subst
+-- matchPat (Atom var) rhs = Just (extend var rhs empty)
+-- matchPat (Number n1) (Number n2)
+--   | n1 == n2  = Just empty
+-- matchPat (String n1) (String n2)
+--   | n1 == n2  = Just empty
+-- matchPat (Bool n1) (Bool n2)
+--   | n1 == n2  = Just empty
+-- matchPat Nil Nil = Just empty
+-- matchPat (List (Atom f : argsLhs)) (List (Atom f' : argsRhs))
+--   | f == f' = matchPats argsLhs argsRhs
+-- matchPat _ _ = Nothing
+
+
 matchPat :: Exp -> Exp -> Maybe Subst
 matchPat (Atom var) rhs = Just (extend var rhs empty)
-matchPat (Number n1) (Number n2)
-  | n1 == n2  = Just empty
-matchPat (String n1) (String n2)
-  | n1 == n2  = Just empty
-matchPat (Bool n1) (Bool n2)
-  | n1 == n2  = Just empty
-matchPat Nil Nil = Just empty
 matchPat (List (Atom f : argsLhs)) (List (Atom f' : argsRhs))
   | f == f' = matchPats argsLhs argsRhs
-matchPat _ _ = Nothing
-
+matchPat a b =
+  if a == b then Just empty
+  else Nothing
 
 
 
@@ -568,8 +655,6 @@ tree0 =
     (cons (cons (Number 1) (Number 2)) (cons (Number 3) (Number 4)))
     (cons (cons (Number 5) (Number 6)) (cons (Number 7) (Number 8)))
 
-tree1 :: Exp
-tree1 = lensExp $ set (Lens tree0 [2, 2, 1]) (app "+" [Number 1, app "+" [Number 2, Number 3]])
 
 
 -- given code has name collisions with test code ... M.fromlist
@@ -606,6 +691,15 @@ s0 :: Subst
 s0 = Env (M.fromList [("x", Number 2), ("y", List [Atom "cons", Atom "z", Atom "z"])])
 
 
+tree1 :: Exp
+tree1 = lensExp $ set (Lens tree0 [2, 2, 1]) (app "+" [Number 1, app "+" [Number 2, Number 3]])
+
+-- reduce1 builtinRules nregt1
+nregt1 :: Lens
+nregt1 = fromJust (nextRedex tree1)
+
+
+-- reduce1 builtinRules snoc
 
 main :: IO ()
 main = do
@@ -641,11 +735,10 @@ main = do
   putStrLn "Q5"
   putStrLn "runProgram snoc"
   print $ runProgram snoc
-  -- print $ "(cons #t (cons 1 (cons \"bazola\" (cons 17 (list)))))"
-  putStrLn "should be: (cons #t (cons 1 (cons \"bazola\" (cons 17 (list)))))"
-  print $ runProgram p
-
+  putStrLn "(cons #t (cons 1 (cons \"bazola\" (cons 17 (list)))))"
+  -- print $ runProgram snoc
   pPrint snoc
+  -- pPrint snoc
 
   -- pPrint tree0
 

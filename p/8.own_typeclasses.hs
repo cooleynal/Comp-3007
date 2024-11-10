@@ -1,5 +1,5 @@
 
--- Eq	             Equality comparison             	    ==, /=
+-- Eq	            Equality comparison             	    ==, /=
 -- Ord	            Ordering	                            <, >, compare
 -- Show	            Convert to string	                    show
 -- Read	            Parse from string	                    read
