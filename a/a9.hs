@@ -8,7 +8,6 @@
 import Data.List (findIndex, nub)
 import Data.Map qualified as M
 import Data.Maybe (fromJust, isJust, mapMaybe)
--- import Data.Maybe (fromList)
 import Data.Text (pack, unpack) -- needed but you can ignore them
 import Debug.Trace
 import Syntax qualified as S
@@ -201,24 +200,46 @@ replaceNth n x xs = take n xs ++ [x] ++ drop (n + 1) xs
 -- findSubexp :: (Exp -> Bool) -> Exp -> Maybe Lens
 -- findSubexp = undefined
 
+-- findSubexp :: (Exp -> Bool) -> Exp -> Maybe Lens
+-- findSubexp f e = Just (Lens e [])
 
 findSubexp :: (Exp -> Bool) -> Exp -> Maybe Lens
-findSubexp f exp = findLens exp exp []
-  where
-    findLens :: Exp -> Exp -> Path -> Maybe Lens
-    findLens original e path
-      | f e = Just (Lens original path)
-      | otherwise = case e of
-          List elements -> findInElements original elements path 0
-          Atom _ -> Nothing
-          _ -> Nothing
+findSubexp p e = case findPath e p [] of
+  Just path -> Just (Lens { lensExp = e, lensPath = path })
+  Nothing   -> Nothing
 
-    findInElements :: Exp -> [Exp] -> Path -> Int -> Maybe Lens
-    findInElements _ [] _ _ = Nothing
-    findInElements original (subExp : rest) path index =
-        case findLens original subExp (path ++ [index]) of
-            Just lens -> Just lens
-            Nothing -> findInElements original rest path (index + 1)
+findPath :: Exp -> (Exp -> Bool) -> Path -> Maybe Path
+findPath Nil _ _ = Nothing
+findPath e p path
+  | p e = Just path
+  | otherwise = case e of
+      List xs -> searchInList xs path 0
+      _ -> Nothing
+  where
+    searchInList [] _ _ = Nothing
+    searchInList (x:xs) path index =
+        case findPath x p (path ++ [index]) of
+            Just foundPath -> Just foundPath
+            Nothing -> searchInList xs path (index + 1)
+
+
+-- findSubexp :: (Exp -> Bool) -> Exp -> Maybe Lens
+-- findSubexp f exp = findLens exp exp []
+--   where
+--     findLens :: Exp -> Exp -> Path -> Maybe Lens
+--     findLens original e path
+--       | f e = Just (Lens original path)
+--       | otherwise = case e of
+--           List elements -> findInElements original elements path 0
+--           Atom _ -> Nothing
+--           _ -> Nothing
+
+--     findInElements :: Exp -> [Exp] -> Path -> Int -> Maybe Lens
+--     findInElements _ [] _ _ = Nothing
+--     findInElements original (subExp : rest) path index =
+--         case findLens original subExp (path ++ [index]) of
+--             Just lens -> Just lens
+--             Nothing -> findInElements original rest path (index + 1)
 
 
 -- Produce a string for the expression as in unparseExp, but enclose the
@@ -333,63 +354,91 @@ instance Show Rule where
 two :: Exp
 two = List [Atom "cons",List [Atom "cons",Number 5,Number 6],List [Atom "cons",List [Atom "+",Number 1,List [Atom "+",Number 2,Number 3]],Number 8]]
 
-nextRedex :: Exp -> Maybe Lens
-nextRedex e = case findNextRedexPath e of
-  Just path -> Just (Lens e path)
-  Nothing -> Nothing
+
+-- nextRedex :: Exp -> Maybe Lens
+-- nextRedex e = case findNextRedexPath e of
+--   Just path -> Just (Lens e path)
+--   Nothing   -> Nothing
 
 -- findNextRedexPath :: Exp -> Maybe Path
--- findNextRedexPath e = case abs e of
---   fst abs == Nil  -> Nothing
---   _   -> Just (path e)
+-- findNextRedexPath e
+--   | fst (abs e) == Nil  = Nothing
+--   | otherwise           = Just (snd (abs e))
 --   where
---     -- path e = snd (recursive (e, []))
---     abs e = (recursive (e, []))
+--     abs e = recursive (e, [])
 
+
+-- -- recursive (List [Atom "+",Number 2,Number 3], [])
+-- -- recursive (List [Atom "cons",List [Atom "+",Number 1,List [Atom "+",Number 2,Number 3]]], [])
+-- -- recursive (tree1, [])
+
+-- recursive :: (Exp, Path) -> (Exp, Path)
+-- recursive (List [_, List l1, List l2], p ) =
+--   let
+--     path1 = recursive (List l1, 1 : p)
+--     path2 = recursive (List l2, 2 : p)
+--   in
+--     if fst path1 == Nil
+--       then path2
+--     else path1
+
+-- recursive (e, p) | reducable e   = (e, reverse p) -- is found return list
+-- recursive (List [_, List l, _], p ) = recursive (List l, 1 : p)
+-- recursive (List [_, List l], p ) = recursive (List l, 1 : p)
+-- recursive (List [_, _, List l], p ) = recursive (List l, 2 : p)
+-- recursive _ = (Nil, [])
+
+
+-- -- is reducible true  == return path
+-- -- is redicuble false == explore remaining lists look for new expression
+
+-- -- List [Atom "cons",List [Atom "+",Number 1,List [Atom "+",Number 2,Number 3]]
+-- -- List [Atom "+",Number 2,Number 3]
+-- -- reducable (List [Atom "cons",Number 1,Number 2])
+-- -- might not find path
+
+-- reducable :: Exp -> Bool
+-- reducable (List [Atom "if", _, _, _]) = True
+-- reducable (List [Atom "+", Number n1, Number n2]) = True
+-- -- reducable (List [Atom "cons", _, _]) = True
+-- reducable (List [Atom "snoc", _, _]) = True
+-- -- reducable (List [_, _, _]) = False
+-- reducable _ = False
+
+
+
+
+nextRedex :: Exp -> Maybe Lens
+nextRedex e = case findNextRedexPath e of
+    Just path -> Just (Lens e path)
+    Nothing   -> Nothing
+
+reducable :: Exp -> Bool
+reducable (List [Atom "if", _, _, _]) = True
+reducable (List [Atom "+", Number _, Number _]) = True
+reducable (List [Atom "snoc", _, _]) = True
+reducable _ = False
 
 findNextRedexPath :: Exp -> Maybe Path
 findNextRedexPath e
-  | fst (abs e) == Nil  = Nothing
-  | otherwise       = Just (snd (abs e))
-  where
-    abs e = recursive (e, [])
-
-
--- recursive (List [Atom "+",Number 2,Number 3], [])
--- recursive (List [Atom "cons",List [Atom "+",Number 1,List [Atom "+",Number 2,Number 3]]], [])
-
--- recursive (tree1, [])
+  | fst (recursive (e, [])) == Nil = Nothing
+  | otherwise = Just (snd (recursive (e, [])))
 
 recursive :: (Exp, Path) -> (Exp, Path)
-recursive (List [_, List l1, List l2], p ) =
-  let
-    path1 = recursive (List l1, 1 : p)
-    path2 = recursive (List l2, 2 : p)
-  in
-    if fst path1 == Nil
-      then path2
-    else path1
+recursive (List [_, List l1, List l2], p) =
+  let path1 = recursive (List l1, 1 : p)
+      path2 = recursive (List l2, 2 : p)
+  in if fst path1 == Nil then path2 else path1
 
-recursive (e, p) | isReducible e   = (e, reverse $ p) -- is found return list
-recursive (List [_, List l, _], p ) = recursive (List l, 1 : p)
-recursive (List [_, List l], p ) = recursive (List l, 1 : p)
-recursive (List [_, _, List l], p ) = recursive (List l, 2 : p)
-
+recursive (e, p) | reducable e = (e, reverse p)
+recursive (List [_, List l, _], p) = recursive (List l, 1 : p)
+recursive (List [_, List l], p) = recursive (List l, 1 : p)
+recursive (List [_, _, List l], p) = recursive (List l, 2 : p)
 recursive _ = (Nil, [])
 
--- is reducible true  == return path
--- is redicuble false == explore remaining lists look for new expression
 
--- List [Atom "cons",List [Atom "+",Number 1,List [Atom "+",Number 2,Number 3]]
 
--- List [Atom "+",Number 2,Number 3]
--- isReducible (List [Atom "cons",Number 1,Number 2])
--- might not find path
-isReducible :: Exp -> Bool
-isReducible (List [Atom "+", Number n1, Number n2]) = True
-isReducible (List [Atom "snoc", _, _]) = True
--- isReducible (List [_, _, _]) = False
-isReducible _ = False
+
 
 psnoc :: Exp
 psnoc = programExp snoc
