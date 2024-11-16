@@ -1,0 +1,113 @@
+(define (factorial n)
+  (if
+    (eq? n 0)
+    1
+    (* n (factorial (- n 1)))))
+
+(define (zip l0 l1)
+  (if
+    (null? l0)
+    (list)
+    (if (null? l1)
+        (list)
+        (cons (cons (car l0) (car l1)) (zip (cdr l0) (cdr l1))))))
+
+(define (test-let-0)
+  (eq?
+    1
+    (let ((x 0) (y 1))
+      (+ x y))))
+
+(define (test-let-1)
+  (eq?
+    0
+    (let ((x 0))
+      ;; The bindings for x and y below are done in parallel,
+      ;; i.e. the right-hand sides are first evaluated in the
+      ;; current environment, then those values are used to extend
+      ;; the environment. Hence the x in  "(y x)" refers to the
+      ;; x above, not the one in  "(x 2)" below.
+      (let ((x 2) (y x))
+	y))))
+
+(define (test-let*-0)
+  (eq?
+    1
+    (let* ((x 0) (y 1))
+      (+ x y))))
+
+(define (test-let*-1)
+  (eq?
+    2
+    (let ((x 0))
+      ;; The bindings for x and y below are done sequentially.
+      ;; In a let*, in processing each binding (z e), e is evaluated in an
+      ;; environment containing the previous bindings. Hence the x in
+      ;; "(y x)" refers to the one in "(x 2)", not the one above.
+      (let* ((x 2) (y x))
+	y))))
+
+(define (test-lambda-0)
+  (eq?
+    20
+    ((lambda (x) (+ x 17)) 3)))
+
+(define (test-lambda-1)
+  (let ((g (let ((x 17))
+	      (let ((f (lambda (y) (+ y x))))
+		f))))
+    ;; The closure for the lambda above "captures" the value for x
+    ;; from the surrounding "let".
+    (eq? (g 3) 20)))
+
+;;; lambdaf should work the same way as lambda. The autograder will
+;;; check that lambdaf's evaluate to VFuncs.
+(define (test-lambdaf-0)
+  (eq?
+    20
+    ((lambdaf (x) (+ x 17)) 3)))
+
+(define (test-lambdaf-1)
+  (let ((g (let ((x 17))
+	      (let ((f (lambdaf (y) (+ y x))))
+		f))))
+    (eq? (g 3) 20)))
+
+(define (test-string-case-0)
+  (let ((f (lambda () "bazola")))
+    (string-case
+      (f)                  ; any expression here --> value being tested
+      (("foo" (+ 1 17))    ; what to return for particular values
+       ("bar" (+ 1 17))    ; ...
+       ("bazola" (+ 1 1))
+       ("gleep" (+ 1 17)))
+      (+ 1 41)             ; value if none of the cases apply
+      )))
+
+;;; NOTE: letrec must use VFunc for the defined function, and not
+;;; VClosure. The extension to eval is very short, but it is rather
+;;; non-obvious. The easiest way is to take advantage of lazy evaluation.
+;;; You don't need to be an expert on the topic: all you need to know
+;;; is that function calls in Haskell are "non-strict": when a function is
+;;; applied to arguments, the arguments are *not* evaluated until they are
+;;; needed.
+;;; So, if we define `f x y = y` and `g x = g x` then the call `f (g 0) 17`
+;;; prints out as `17` instead of going into an infinite recursion, as
+;;; would happen in most other languages.
+(define (test-letrec-0)
+  (eq?
+    24
+    ;; define a recursive function f; the scope of the definition is
+    ;; the body of the letrec, i.e. (f 4).
+    (letrec
+      ((f n) (if (eq? n 0) 1 (* n (f (- n 1)))))
+      (f 4))))
+
+(define (test-letrec-1)
+   (let ((fact
+	    (let ((x (- 0 1)))
+	      (letrec
+		((f n) (if (eq? n 0) x (* n (f (- n 1)))))
+		f))))
+      (eq? (fact 4) (- 0 24))))
+
