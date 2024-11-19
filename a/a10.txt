@@ -75,14 +75,16 @@
 
 (define (test-string-case-0)
   (let ((f (lambda () "bazola")))
-    (string-case
-      (f)                  ; any expression here --> value being tested
-      (("foo" (+ 1 17))    ; what to return for particular values
-       ("bar" (+ 1 17))    ; ...
-       ("bazola" (+ 1 1))
-       ("gleep" (+ 1 17)))
-      (+ 1 41)             ; value if none of the cases apply
-      )))
+    (eq?
+      2
+        (string-case
+         (f)                    ; any expression here --> value being tested
+            (("foo" (+ 1 17))   ; what to return for particular values
+            ("bar" (+ 1 17))    ; ...
+            ("bazola" (+ 1 1))
+            ("gleep" (+ 1 17)))
+            (+ 1 41)            ; value if none of the cases apply
+        ))))
 
 ;;; NOTE: letrec must use VFunc for the defined function, and not
 ;;; VClosure. The extension to eval is very short, but it is rather
@@ -110,4 +112,3 @@
 		((f n) (if (eq? n 0) x (* n (f (- n 1)))))
 		f))))
       (eq? (fact 4) (- 0 24))))
-

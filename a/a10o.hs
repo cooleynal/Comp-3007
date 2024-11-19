@@ -2,8 +2,8 @@
 
 module SchemeEval where
 
-
 import Debug.Trace (trace)
+import Text.Pretty.Simple (pPrint)
 
 import Data.List (find, intercalate, nub)
 import Data.Map qualified as M
@@ -43,6 +43,10 @@ import SchemeSyntax
 -- the file's tests using this, e.g. run "(test-letrec-0)".
 
 -- The type of values that can result from evaluating a Scheme program.
+
+
+-- run "(test-letrec-0)"
+
 data V
   = VNumber Int
   | VString String
@@ -105,127 +109,92 @@ primitives =
       ("cdr", (1, \[VCons _ y] -> y))
     ]
 
-specialForms = ["if", "let", "let*", "letrec", "lambda", "lambdaf"]
+-- primitives :: M.Map String (Int, [V] -> V)
+-- primitives =
+--   M.fromList
+--     [ ("+", (2, \[VNumber x, VNumber y] -> VNumber (x + y))),
+--       ("*", (2, \[VNumber x, VNumber y] -> VNumber (x * y))),
+--       ("-", (2, \[VNumber x, VNumber y] -> VNumber (x - y))),
+--       ("eq?", (2, \[x, y] -> VBool $ x == y)),
+--       ("null?", (1, \[v] -> VBool (v == VNil))),
+--       ("cons", (2, \[x, y] -> VCons x y)),
+--       ("car", (1, \[VCons x _] -> x)),
+--       ("cdr", (1, \[VCons _ y] -> y)),
+--       ("letrec", (1, \[VCons _ y] -> y))
+--     ]
+
+
 
 isPrimitive :: String -> Bool
 isPrimitive x = M.member x primitives
 
+-- run "(test-letrec-0)"
+-- run "factorial n"
 
--- run "(zip (cons 1 2) (cons 1 2))"
+-- letrec
+extendRecursive :: Env -> Exp -> Env
+extendRecursive env (List bindings) =
+  let
+      makeClosure :: Exp -> (String, V)
+      makeClosure (List [Atom fName, funcDef]) =
+        let closure = VClosure fName env [] funcDef
+        in (fName, closure)
+      makeClosure badBinding =
+        error $ "Invalid binding in letrec: " ++ show badBinding
+
+      extendedBindings = map makeClosure bindings
+  in extend (map fst extendedBindings) (map snd extendedBindings) env
 
 
--- Evaluate an expression
+
+
 eval :: Env -> Exp -> V
 
--- run "(test-letrec-0)"
 eval env (List (Atom "letrec" : es) ) =
-  -- trace ("\n LETREC n")
-  -- trace (show es)
+  trace ("\n LETREC n")
+  trace (show es)
   -- VNil
   VFunc (evalApply VNil )
+  -- VFunc (evalApply (eval env l1) )
 
-
--- ghci> str <- readFile "a10.txt"
--- ghci> parseDefs str
-
-
--- List [Atom "let",List [List [Atom "x",Number 0],List [Atom "y",Number 1]],List [Atom "+",Atom "x",Atom "y"]]
-
--- List [List [Atom "x",Number 0],List [Atom "y",Number 1]]
--- List [Atom "+",Atom "x",Atom "y"]
-
--- extend :: [String] -> [V] -> Env -> Env
--- eval :: Env -> Exp -> V
--- evalApply :: V -> [V] -> V
--- run "(test-let-0)"
-eval env (List (Atom "let" : es) ) =
-
-  eval newEnv (es !! 1) -- cant be a list, perhaps recursion
-  where
-    list = es !! 0
-    lb = letBindings list
-    newEnv = extend (map fst lb) (map (eval env) (map snd lb)) env
-
-
-  -- let
-    -- list = es !! 0
-    -- lb = letBindings list
-  -- in
-  --   trace ("\n Head ES: " ++ show list)
-  --   trace ("\n LET BINDINGS: " ++ show lb) -- LET BINDINGS: [("x",Number 0),("y",Number 1)]
-  --   trace ("\n map fst lb: " ++ show (map fst lb))
-  --   trace ("\n map snd lb: " ++ show (map snd lb))
-
-  -- where
-  --   newEnv = extend (map fst lb) (map (eval env) (map snd lb)) env
-    -- extend (extractFirst (map fst lb)) (extractSecond (es !! 0)) env
-
-    -- evalApply (eval env (head es)) (map (eval env) (tail es))
+-- run "(test-letrec-0)"
 
 
 
--- run "(zip (x 0) (y 1))"
+-- eval env (List (Atom "letrec" : bindings : body)) =
+--   let
+--     -- Ensure bindings is a list of recursive function definitions
+--     makeRecClosure :: Exp -> (String, V)
+--     makeRecClosure (List [Atom fName, funcDef]) =
+--       let closure = VFunc (\args -> eval (extend [fName] [VFunc (\_ -> VNil)] env) funcDef)
+--       in (fName, closure)
+--     makeRecClosure badBinding = error $ "Invalid binding in letrec: " ++ show badBinding
 
--- REVISIT LATER
-eval env (List (Atom "let*" : es) ) =
-
-  eval newEnv (es !! 1) -- cant be a list, perhaps recursion
-  where
-    list = es !! 0
-    lb = letBindings list
-    newEnv = extend (map fst lb) (map (eval env) (map snd lb)) env
-
-
-
--- List [Atom "define",List [Atom "test-lambda-0"],List [Atom "eq?",Number 20,List [List [Atom "lambda",List [Atom "x"],List [Atom "+",Atom "x",Number 17]],Number 3]]]
-
-
--- run "(test-lambda-0)"
--- ghci> str <- readFile "a10.txt"
--- ghci> parseDefs str
-eval env (List (Atom "lambda" : es) ) =
-  let
-    list = es
-    -- lb = letBindings list
-
-    -- geter = envValue "x" env
-  in
-    -- trace ("\n geter: " ++ show geter)
-
-    trace ("\n Head ES: " ++ show list)
-    -- trace ("\n LET BINDINGS: " ++ show lb) -- LET BINDINGS: [("x",Number 0),("y",Number 1)]
-    -- trace ("\n map fst lb: " ++ show (map fst lb))
-    -- trace ("\n map snd lb: " ++ show (map snd lb))
-  VNil
+--     -- Create the recursive environment
+--     extendedBindings = map makeRecClosure bindings
+--     recursiveEnv = extend (map fst extendedBindings) (map snd extendedBindings) env
+--   in
+--     -- Evaluate the body in the recursive environment
+--     foldl (\_ b -> eval recursiveEnv b) VNil body
 
 
 
--- ghci> str <- readFile "a10.txt"
--- ghci> parseDefs str
-
-
--- [[Atom "zip",Atom "l0",Atom "l1"],List [Atom "if",List [Atom "null?",Atom "l0"],List [Atom "list"],List [Atom "if",List [Atom "null?",Atom "l1"],List [Atom "list"],List [Atom "cons",List [Atom "cons",List [Atom "car",Atom "l0"],List [Atom "car",Atom "l1"]],List [Atom "zip",List [Atom "cdr",Atom "l0"],List [Atom "cdr",Atom "l1"]]]]]]
-
-eval env (List (Atom "zip" : es) ) =
-
-  let
-    list = es
-    -- lb = letBindings list
-  in
-    -- trace ("\n Head ES: " ++ show (head list))
+-- run "test-let-0"
+eval env (List (Atom "let" : xs)) = -- doesnt match.
+  trace ("\nLet\n")
   VNil
 
 
 
 
 eval env (Atom x) =
+  -- trace ("\n eval env (Atom x): \n" ++ show env ++ "\n(Atom x): \n" ++ x)
   envValue x env
 eval env (String s) =
   VString s
 eval env (Bool b) =
   VBool b
 eval env (Number n) =
-  trace ("\n NUMBER N: " ++ show n)
   VNumber n
 eval env Nil =
   VNil
@@ -246,10 +215,17 @@ eval env e@(List (Atom "if" : _)) =
 eval env (List (Atom f : args))
   | isPrimitive f =
       applyPrimitive f (map (eval env) args)
-eval env (List (Atom f : args))
-  | f `elem` specialForms =
-      error $ "eval: special form " ++ f ++ " not implemented"
+
+
+
 eval env (List (e : args)) =
+  -- trace ("\n ENV: \n" ++ show env)
+  -- trace ("\n E: \n" ++ show e)
+  -- trace ("\n ARGS: \n" ++ show args)
+
+  -- trace ("\n (eval env e): \n" ++ show (eval env e))
+  -- trace ("\n (map (eval env) args): \n" ++ show (map (eval env) args))
+
   evalApply (eval env e) (map (eval env) args)
 
 evalApply :: V -> [V] -> V
@@ -306,16 +282,16 @@ defsFromFile fileName = do
   str <- readFile fileName
   return $ parseDefs str
 
+-- run "(test-letrec-0)"
+
 run :: String -> IO V
 run e = do
   str <- readFile "a10.txt"
+  -- print (parseDefs str)
+  -- print (compileDefs(parseDefs str))
+  -- print ( (parseExp e) )
+  pPrint (parseDefs str) -- forget how we isolated
   return $ eval (compileDefs (parseDefs str)) (parseExp e)
-
-
-
-
-
-  --------
 
 
 
