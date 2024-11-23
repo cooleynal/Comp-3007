@@ -1,0 +1,6 @@
+PS C:\Users\tr\Desktop\Comp-3007\a> go mod init a11.go
+
+PS C:\Users\tr\Desktop\Comp-3007\a> go build
+# a11.go
+
+PS C:\Users\tr\Desktop\Comp-3007\a> go build a11.go
