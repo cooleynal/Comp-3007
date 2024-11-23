@@ -1,6 +1,22 @@
+PS C:\Users\tr\Desktop\Comp-3007\l> go mod init l15.go
+run and debug
+
+PS C:\Users\tr\Desktop\Comp-3007\l> go run l16-eval.go
+
+
+
+
+
 PS C:\Users\tr\Desktop\Comp-3007\a> go mod init a11.go
 
 PS C:\Users\tr\Desktop\Comp-3007\a> go build
 # a11.go
 
 PS C:\Users\tr\Desktop\Comp-3007\a> go build a11.go
+
+PS C:\Users\tr\Desktop\Comp-3007\l> run l16-eval.go
+
+go run a11.go
+
+PS C:\Users\tr\Desktop\Comp-3007> cd l
+PS C:\Users\tr\Desktop\Comp-3007\l> go run l16-eval.go
