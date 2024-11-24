@@ -15,10 +15,16 @@ import (
 // The assignment is to create an interpreter framework using
 // interfaces and then instantiate it for a simple Scheme interpreter.
 //
-// Interpreters here have four main parts: a lexer, a parser, an ast,
-// and an evaluator. The lexer breaks the input into tokens, the parser
-// constructs an abstract syntax tree (ast) from the tokens, and the
-// evaluator interprets the ast to produce a result.
+// Interpreters here have four main parts:
+
+// a lexer,
+// a parser,
+// an ast,
+// and an evaluator.
+
+// the lexer breaks the input into tokens,
+// the parser constructs an abstract syntax tree (ast) from the tokens,
+// the evaluator interprets the ast to produce a result.
 //
 // The Scheme interpreter is a shabby near-useless one. All it can do
 // is add, multiply and subtract integers. But as Microsoft says,
@@ -86,16 +92,32 @@ type Interpreter struct {
 
 // Repeatedly calls LexNext until no tokens remain and return the
 // accumulated tokens.
-// **** TODO ****
 func Lex(lexer Lexer, str string) []string {
+	// **** TODO ****
+	// return []string{} // replace this
+
 	var tokens []string
 	var input []byte = []byte(str)
+	// fmt.Println("\n\n\tLEX(): ", str, lexer)
+	// var input []byte ; input = []byte(str)
+	// input := []byte(str)
+
 	for len(input) > 0 {
+
 		if input[0] == 10 || input[0] == 13 {break}
+
 		token, rest := lexer.LexNext(input)
+		fmt.Println("\n\n\tLEX() token:", token, "Remaining input:", rest)
+
+		// fmt.Println("\n\n\tLEX() IF: ", token)
+		// func isWhitespace(c byte) bool {
 		if !isWhitespace(token[0]){tokens = append(tokens, token)}
+		// tokens = append(tokens, token)
+		// fmt.Println("\n\n\tLEX() token:", token, "Remaining input:", rest)
 		input = rest
 	}
+
+	fmt.Print(tokens)
 	return tokens
 }
 
@@ -184,15 +206,23 @@ func (sl schemeLexer) LexNext(chars []byte) (string, []byte) {
 	return string(token), rest
 }
 
-// **** TODO ****
+
+// go run a11.go
+
+
 func (sa schemeAst) Data() string {
+	fmt.Println("\n\n\tData(): ", sa)
+	// **** TODO ****
+	// return "" // replace this
 	return sa.data
 }
 
-// **** TODO ****
 func (sa schemeAst) Parts() []Ast {
+	fmt.Println("\n\n\tParts(): ", sa)
+	// **** TODO ****
+	// return nil
 	parts := make([]Ast, len(sa.parts))
-	for i, part := range sa.parts{
+	for i, part := range sa.parts {
 		parts[i] = part
 	}
 	return parts
@@ -232,49 +262,58 @@ func (sv schemeVal) stringifyValue() string {
 	return strconv.Itoa(int(sv))
 }
 
+// func (se schemeEvaluator) Eval(t Ast) Value {
+// 	fmt.Println("\n\n\tEval(t Ast): ", se)
+// 	fmt.Println("\n\n\tEval(t Ast): ", t)
+// 	// convert from Ast to []String
+// 	// var tokens []string
 
+
+// 	if len(t.Parts()) == 0 {
+// 		return schemeVal(stringToInt(t.Data()))
+// 	}
+
+// 	var str []string
+// 	var ssast schemeAst
+// 	// ssast, str = schemeParse(t)
+
+
+// 	fmt.Println("\n\n\tEval(t Ast): ", str)
+// 	fmt.Println("\n\n\tEval(t Ast): ", ssast)
+
+// 	// **** TODO ****
+// 	return schemeVal(0) // replace this
+// }
 
 func (se schemeEvaluator) Eval(t Ast) Value {
-    result := schemeEval(t.(schemeAst))
-    return schemeVal(result)
+
+	if len(t.Parts()) == 0 {
+		return schemeVal(stringToInt(t.Data()))
+	}
+
+	op := t.Parts()[0].Data()
+	args := t.Parts()[1:]
+
+	evaluatedArgs := []int{}
+	for _, arg := range args {
+		evaluatedArgs = append(evaluatedArgs, int(se.Eval(arg).(schemeVal)))
+	}
+
+	switch op {
+	case "+":
+		return schemeVal(sum(evaluatedArgs))
+	case "*":
+		return schemeVal(product(evaluatedArgs))
+	case "-":
+		return schemeVal(subtract(evaluatedArgs))
+	default:
+		panicWith("Eval: unknown operator", op)
+	}
+	return nil
 }
 
 
 
-// **** TODO ****
-func schemeEval(t schemeAst) int {
-    if len(t.parts) == 0 {
-        return stringToInt(t.data)
-    }
-
-    if len(t.parts) < 2 {
-        panicWith("Malformed expression: insufficient parts", t)
-    }
-
-    op := t.parts[0].data
-    args := t.parts[1:]
-
-    if op != "+" && op != "-" && op != "*" {
-        panicWith("Unknown operation", op)
-    }
-
-    evaledArgs := []int{}
-    for _, arg := range args {
-        evaledArgs = append(evaledArgs, schemeEval(arg))
-    }
-
-    switch op {
-    case "+":
-        return sum(evaledArgs)
-    case "-":
-        return sub(evaledArgs)
-    case "*":
-        return prod(evaledArgs)
-    default:
-        panicWith("Unexpected operation", op)
-    }
-	return 0
-}
 
 func sum(numbers []int) int {
     total := 0
@@ -284,7 +323,7 @@ func sum(numbers []int) int {
     return total
 }
 
-func prod(numbers []int) int {
+func product(numbers []int) int {
     total := 1
     for _, n := range numbers {
         total *= n
@@ -292,8 +331,10 @@ func prod(numbers []int) int {
     return total
 }
 
-func sub(numbers []int) int {
-    if len(numbers) == 0 {return 0}
+func subtract(numbers []int) int {
+    if len(numbers) == 0 {
+        return 0
+    }
     total := numbers[0]
     for _, n := range numbers[1:] {
         total -= n
@@ -302,6 +343,13 @@ func sub(numbers []int) int {
 }
 
 
+
+
+func schemeEval(t schemeAst) int {
+	fmt.Println("\n\n\tschemeEval(t schemeAst): ", t)
+	// **** TODO ****
+	return 0 // replace this
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // Some generic utilities //////////////////////////////////////////////////////////////
