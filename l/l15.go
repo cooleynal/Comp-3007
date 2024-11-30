@@ -25,4 +25,4 @@ type String struct{ s string }
 type Nil struct{}
 type Bool struct{ b bool }
 
-func main() {}
+// func main() {}

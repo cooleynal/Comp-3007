@@ -1,7 +1,5 @@
 package main
 
-import "fmt"
-
 type E interface {
 	eval(Env) V
 }
@@ -113,6 +111,6 @@ var plus, minus, times = AtomE("+"), AtomE("-"), AtomE("*")
 
 var eg =l(times, l(plus, two,three), three)
 
-func main(){
-	fmt.Println(eg.eval(emptyEnv))
-}
+// func main(){
+// 	fmt.Println(eg.eval(emptyEnv))
+// }

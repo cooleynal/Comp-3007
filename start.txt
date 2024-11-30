@@ -1,0 +1,5 @@
+
+go mod 
+entr do it on save
+
+go mod init

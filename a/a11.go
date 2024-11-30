@@ -84,6 +84,9 @@ type Interpreter struct {
 	Evaler Evaluator
 }
 
+// (+ (- 2 5) 9)
+// go run a11.go
+
 // Repeatedly calls LexNext until no tokens remain and return the
 // accumulated tokens.
 // **** TODO ****
@@ -96,6 +99,7 @@ func Lex(lexer Lexer, str string) []string {
 		if !isWhitespace(token[0]){tokens = append(tokens, token)}
 		input = rest
 	}
+	fmt.Println(tokens)
 	return tokens
 }
 
@@ -119,9 +123,11 @@ func Repl(i Interpreter) {
 	}
 }
 
-func main() {
-	Repl(schemeInterpreter)
-}
+// "repl" >  (+ (* (- 1 2) (* 3 4) 5) 5)
+
+// func main() {
+// 	Repl(schemeInterpreter)
+// }
 
 // Print an Ast in a readable form. For debugging.
 func printAst(t Ast) {
@@ -233,7 +239,7 @@ func (sv schemeVal) stringifyValue() string {
 }
 
 
-
+// **** TODO ****
 func (se schemeEvaluator) Eval(t Ast) Value {
     result := schemeEval(t.(schemeAst))
     return schemeVal(result)

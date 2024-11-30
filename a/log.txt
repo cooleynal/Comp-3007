@@ -1,0 +1,10 @@
+msg sent by user-Bongo to gatewayChan: user=Bongo cmd= arg0= arg1= result= channel=user-Bongo-chan
+msg delivered to user-Bongo from user-Bongo-chan: user=Bongo cmd= arg0= arg1= result= channel=handler-Bongo-chan
+msg sent by gateway to user-Bongo-chan: user=Bongo cmd= arg0= arg1= result= channel=user-Bongo-chan
+msg sent by Bongo to handler-Bongo-chan: user=Bongo cmd=set arg0=c arg1=3 result= channel=handler-Bongo-chan
+msg sent by user-Bingo to gatewayChan: user=Bingo cmd= arg0= arg1= result= channel=user-Bingo-chan
+msg sent by Bongo to handler-Bongo-chan: user=Bongo cmd=get arg0=a arg1= result= channel=handler-Bongo-chan
+msg sent by gateway to user-Bingo-chan: user=Bingo cmd= arg0= arg1= result= channel=user-Bingo-chan
+msg delivered to user-Bingo from user-Bingo-chan: user=Bingo cmd= arg0= arg1= result= channel=handler-Bingo-chan
+msg delivered to Bongo from handler-Bongo-chan: user=Bongo cmd=get arg0=a arg1= result= channel=handler-Bongo-chan
+msg sent by Bingo to handler-Bingo-chan: user=Bingo cmd=set arg0=a arg1=1 result= channel=handler-Bingo-chan
