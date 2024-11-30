@@ -49,6 +49,7 @@ import (
 )
 
 // Pile of globals. You'll need them all. Don't add any.
+var kvsLockm sync.Mutex
 var kvs map[string]string
 var kvsLock = makeChan("kvsLock",1)
 var gatewayChan = makeChan("gatewayChan",0)
@@ -137,8 +138,15 @@ func systemInit() {
 // }
 
 func kvsGet(key string) string {
-	<- kvsLock
-	defer func() { kvsLock <- packet{}}()
+	kvsLockm.Lock()
+    defer kvsLockm.Unlock()
+
+	// <- kvsLock
+	// defer func() { kvsLock <- packet{} }()
+
+	// kvsLock <- packet{}
+	// defer func() { <-kvsLock }()
+	// defer func() { kvsLock <- packet{}}()
 	return kvs[key]
 }
 
@@ -150,7 +158,13 @@ func kvsGet(key string) string {
 
 func kvsSet(key string, value string) {
 	<- kvsLock
-	defer func() { kvsLock <- packet{}}()
+	defer func() { kvsLock <- packet{} }()
+	// kvsLockm.Lock()
+    // defer kvsLockm.Unlock()
+	// kvsLock <- packet{}
+	// defer func() { <-kvsLock }()
+	// <- kvsLock
+	// defer func() { kvsLock <- packet{}}()
 	kvs[key] = value
 }
 
@@ -167,8 +181,14 @@ func kvsSet(key string, value string) {
 
 
 func kvsString() string {
-	<- kvsLock
-	defer func() { kvsLock <- packet{} }()
+	// <- kvsLock
+	// defer func() { kvsLock <- packet{} }()
+	// kvsLockm.Lock()
+    // defer kvsLockm.Unlock()
+	// kvsLock <- packet{}
+	// defer func() { <-kvsLock }()
+	// <- kvsLock
+	// defer func() { kvsLock <- packet{} }()
 
 	out := "kvs contents:\n"
 	for key, value := range kvs {
@@ -197,6 +217,8 @@ func kvsPrint() {
 
 func handler(user string, userChan chan packet) {
 	defer handlerWg.Done()
+	// kvsLock <- packet{}
+	// defer func() { <-kvsLock }()
 	for {
 		req := <-userChan
 		switch req.cmd {
@@ -226,6 +248,8 @@ func handler(user string, userChan chan packet) {
 
 
 func get(user string, handlerChan chan packet, key string) string {
+	// <- kvsLock
+	// defer func() { kvsLock <- packet{} }()
     getPacket := packet{
         user:    user,
         channel: handlerChan,
@@ -250,6 +274,8 @@ func get(user string, handlerChan chan packet, key string) string {
 // }
 
 func set(user string, handlerChan chan packet, key, value string) {
+	// <- kvsLock
+	// defer func() { kvsLock <- packet{} }()
 	setPacket := packet{
 		user:    user,
 		channel: handlerChan,
