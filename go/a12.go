@@ -51,9 +51,9 @@ import (
 // Pile of globals. You'll need them all. Don't add any.
 var kvsLockm sync.Mutex
 var kvs map[string]string
-var kvsLock = makeChan("kvsLock",1)
-var gatewayChan = makeChan("gatewayChan",0)
-var gatewayQuitChan = makeChan("gatewayQuitChan",0)
+var kvsLock = makeChan("kvsLock", 1)
+var gatewayChan = makeChan("gatewayChan", 0)
+var gatewayQuitChan = makeChan("gatewayQuitChan", 0)
 var userWg sync.WaitGroup
 var serverWg sync.WaitGroup
 var handlerWg sync.WaitGroup
@@ -99,28 +99,25 @@ func packetString(p packet) string {
 
 // }
 func gateway() {
-    defer serverWg.Done()
-    for {
-        select {
-        case loginRequest := <-gatewayChan:
-            handlerChan := makeChan("handler-"+loginRequest.user+"-chan", 0)
-            handlerWg.Add(1)
-            go handler(loginRequest.user, handlerChan)
-            loginRequest.channel <- packet{
-                user:    loginRequest.user,
-                channel: handlerChan,
-            }
-            logSend(loginRequest.channel, "gateway", loginRequest)
+	defer serverWg.Done()
+	for {
+		select {
+		case loginRequest := <-gatewayChan:
+			handlerChan := makeChan("handler-"+loginRequest.user+"-chan", 0)
+			handlerWg.Add(1)
+			go handler(loginRequest.user, handlerChan)
+			loginRequest.channel <- packet{
+				user:    loginRequest.user,
+				channel: handlerChan,
+			}
+			logSend(loginRequest.channel, "gateway", loginRequest)
 
-        case <-gatewayQuitChan:
-            log("Gateway received quit signal.")
-            return
-        }
-    }
+		case <-gatewayQuitChan:
+			log("Gateway received quit signal.")
+			return
+		}
+	}
 }
-
-
-
 
 // Used in main.
 func systemInit() {
@@ -139,7 +136,7 @@ func systemInit() {
 
 func kvsGet(key string) string {
 	kvsLockm.Lock()
-    defer kvsLockm.Unlock()
+	defer kvsLockm.Unlock()
 
 	// <- kvsLock
 	// defer func() { kvsLock <- packet{} }()
@@ -150,24 +147,22 @@ func kvsGet(key string) string {
 	return kvs[key]
 }
 
-
 // Set the value for the key, locking the kvs.
 // func kvsSet(key string, value string) {
 // 	// TODO
 // }
 
 func kvsSet(key string, value string) {
-	<- kvsLock
+	<-kvsLock
 	defer func() { kvsLock <- packet{} }()
 	// kvsLockm.Lock()
-    // defer kvsLockm.Unlock()
+	// defer kvsLockm.Unlock()
 	// kvsLock <- packet{}
 	// defer func() { <-kvsLock }()
 	// <- kvsLock
 	// defer func() { kvsLock <- packet{}}()
 	kvs[key] = value
 }
-
 
 // Get a string version of the kvs, locking it.
 // func kvsString() string {
@@ -179,12 +174,11 @@ func kvsSet(key string, value string) {
 // 	return out
 // }
 
-
 func kvsString() string {
 	// <- kvsLock
 	// defer func() { kvsLock <- packet{} }()
 	// kvsLockm.Lock()
-    // defer kvsLockm.Unlock()
+	// defer kvsLockm.Unlock()
 	// kvsLock <- packet{}
 	// defer func() { <-kvsLock }()
 	// <- kvsLock
@@ -196,7 +190,6 @@ func kvsString() string {
 	}
 	return out
 }
-
 
 // Print the kvs, locking it.
 func kvsPrint() {
@@ -213,7 +206,6 @@ func kvsPrint() {
 // 	    // TODO
 // 	}
 // }
-
 
 func handler(user string, userChan chan packet) {
 	defer handlerWg.Done()
@@ -238,35 +230,31 @@ func handler(user string, userChan chan packet) {
 	}
 }
 
-
-
 // send a get command to a handler
 // func get(user string, handlerChan chan packet, key string) string {
 // 	// TODO
 // 	return "" // dummy return to pass type check
 // }
 
-
 func get(user string, handlerChan chan packet, key string) string {
 	// <- kvsLock
 	// defer func() { kvsLock <- packet{} }()
-    getPacket := packet{
-        user:    user,
-        channel: handlerChan,
-        cmd:     "get",
-        arg0:    key,
+	getPacket := packet{
+		user:    user,
+		channel: handlerChan,
+		cmd:     "get",
+		arg0:    key,
 		// arg1:    value,
-    }
+	}
 
-    handlerChan <- getPacket
-    logSend(handlerChan, user, getPacket)
+	handlerChan <- getPacket
+	logSend(handlerChan, user, getPacket)
 
-    response := <-handlerChan
-    logReceive(handlerChan, user, response)
+	response := <-handlerChan
+	logReceive(handlerChan, user, response)
 
-    return response.result
+	return response.result
 }
-
 
 // send a set command to a handler
 // func set(user string, handlerChan chan packet, key, value string) {
@@ -288,7 +276,6 @@ func set(user string, handlerChan chan packet, key, value string) {
 	<-handlerChan
 }
 
-
 // A user goroutine. It should
 // 1) "log in", i.e. communicate with gateway to create a handler and get its channel,
 // 2) execute actions with user and the handler channel as arguments, and
@@ -297,12 +284,10 @@ func set(user string, handlerChan chan packet, key, value string) {
 // 	defer userWg.Done()
 
 // 	// Two lines commented out to avoid compiler errors.
-	// myChan := makeChan("user-"+ user + "-chan", 0)
-	// loginRequest := packet{user: user, channel: myChan}
-	// TODO
+// myChan := makeChan("user-"+ user + "-chan", 0)
+// loginRequest := packet{user: user, channel: myChan}
+// TODO
 // }
-
-
 
 func user(user string, actions func(string, chan packet)) {
 	defer userWg.Done()
@@ -321,8 +306,6 @@ func user(user string, actions func(string, chan packet)) {
 	handler.channel <- quitPacket
 	logSend(handler.channel, "user-"+user, quitPacket)
 }
-
-
 
 //////////////
 // Logging  //
@@ -358,11 +341,11 @@ func logInit() {
 	os.Remove(logFile)
 }
 
-func logSend(c chan packet, sender string, msg packet){
+func logSend(c chan packet, sender string, msg packet) {
 	log("msg sent by " + sender + " to " + channelName(c) + ": " + packetString(msg))
 }
 
-func logReceive(c chan packet, recipient string, msg packet){
+func logReceive(c chan packet, recipient string, msg packet) {
 	log("msg delivered to " + recipient + " from " + channelName(c) + ": " + packetString(msg))
 }
 

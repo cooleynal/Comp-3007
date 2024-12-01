@@ -1,3 +1,13 @@
+   2 cd go
+   3 ls
+   4 run go a12.go
+   5 go run a12.go
+
+
+
+
+
+
 PS C:\Users\tr\Desktop\Comp-3007\l> go mod init l15.go
 run and debug
 
