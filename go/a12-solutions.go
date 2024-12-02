@@ -92,13 +92,21 @@ func packetString(p packet) string {
 func gateway() {
 	defer serverWg.Done()
 	for {
-		// TODO
+		select {
+		case <-gatewayQuitChan:
+			handlerWg.Wait()
+			return
+		case request := <-gatewayChan:
+			handlerWg.Add(1)
+			go handler(request.user, request.channel)
+			request.channel <- packet{}
+		}
 	}
 }
 
 // Used in main.
 func systemInit() {
-	kvs = make(map[string]string)
+	kvs = make(map[string]string) // use &kvs as first arg to kvsSet and kvsGet
 	logInit()
 	serverWg.Add(1)
 	kvsLock <- packet{}
@@ -107,18 +115,32 @@ func systemInit() {
 
 // Get the value for the key, locking the kvs.
 func kvsGet(key string) string {
-	// TODO
-	return "" // dummy return to pass type check
+	defer func(){
+		kvsLock <- packet{}
+	}()
+	<-kvsLock
+	result, ok := kvs[key]
+	if !ok {
+		result = ""
+	}
+	return result
 }
 
 // Set the value for the key, locking the kvs.
 func kvsSet(key string, value string) {
-	// TODO
+	defer func(){
+		kvsLock <- packet{}
+	}()
+	<-kvsLock
+	kvs[key] = value
 }
 
 // Get a string version of the kvs, locking it.
 func kvsString() string {
-	// TODO: ADD LOCKING
+	defer func(){
+		kvsLock <- packet{}
+	}()
+	<-kvsLock
 	out := "kvs contents:\n"
 	for key, value := range kvs {
 		out = fmt.Sprintf("%s    key: %s, value: %s\n", out, key, value)
@@ -137,30 +159,48 @@ func kvsPrint() {
 func handler(user string, userChan chan packet) {
 	defer handlerWg.Done()
 	for {
-	    // TODO
+		request := <-userChan
+		response := request // copy of request to start with
+		switch request.cmd {
+		case "quit":
+			return
+		case "set":
+			kvsSet(request.arg0, request.arg1)
+			response.result = "success"
+		case "get":
+			response.result = kvsGet(request.arg0)
+		}
+		userChan <- response
 	}
 }
 
 // send a get command to a handler
 func get(user string, handlerChan chan packet, key string) string {
-	// TODO
-	return "" // dummy return to pass type check
+	request := packet{user: user, cmd: "get", arg0: key, channel: handlerChan}
+	handlerChan <- request
+	response := <-handlerChan
+	return response.result
 }
 
 // send a set command to a handler
 func set(user string, handlerChan chan packet, key, value string) {
-	// TODO
+	request := packet{user: user, cmd: "set", arg0: key, arg1: value, channel: handlerChan}
+	handlerChan <- request
+	<-handlerChan
 }
 
-// A user goroutine. It should 1) "log in", i.e. communicate with gateway to
-// create a handlerk 2) execute actions with user and the handler channel as
-// arguments, and 3) send a quit command to the handler.
+// A user goroutine. It should 1) "log in", i.e. communicate with gateway
+// to create a handler and get its channel, 2) execute actions with user
+// and the handler channel as arguments, and 3) send a quit command to
+// the handler.
 func user(user string, actions func(string, chan packet)) {
 	defer userWg.Done()
-	// Two lines commented out to avoid compiler errors.
-	//myChan := makeChan("user-"+ user + "-chan", 0)
-	//loginRequest := packet{user: user, channel: myChan}
-	// TODO
+	myChan := makeChan("user-"+ user + "-chan", 0)
+	loginRequest := packet{user: user, channel: myChan}
+	gatewayChan <- loginRequest
+	<-myChan
+	actions(user, myChan)
+	myChan <- packet{cmd: "quit"}
 }
 
 //////////////

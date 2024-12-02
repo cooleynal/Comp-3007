@@ -88,8 +88,16 @@ type Interpreter struct {
 // Repeatedly calls LexNext until no tokens remain and return the
 // accumulated tokens.
 func Lex(lexer Lexer, str string) []string {
-	// **** TODO ****
-	return []string{} // replace this
+	tokens := []string{}
+	remainingStr := []byte(str)
+	var token string
+	for {
+		token, remainingStr = lexer.LexNext(remainingStr)
+		if token == "" {
+			return tokens
+		}
+		tokens = append(tokens, token)
+	}
 }
 
 // Run the interpreter on a string input, printing out the result
@@ -178,12 +186,15 @@ func (sl schemeLexer) LexNext(chars []byte) (string, []byte) {
 }
 
 func (sa schemeAst) Data() string {
-	// **** TODO ****
-	return "" // replace this
+	return sa.data
 }
 
 func (sa schemeAst) Parts() []Ast {
-	// **** TODO ****
+	result := make([]Ast, len(sa.parts))
+	for i, _ := range sa.parts {
+		result[i] = sa.parts[i]
+	}
+	return result
 }
 
 func (sp schemeParser) Parse(tokens []string) Ast {
@@ -221,13 +232,39 @@ func (sv schemeVal) stringifyValue() string {
 }
 
 func (se schemeEvaluator) Eval(t Ast) Value {
-	// **** TODO ****
-	return schemeVal(0) // replace this
+	schemeT, ok := t.(schemeAst)
+	if !ok {
+		panicWith("Eval: expected schemeAst t: ", t)
+	}
+	return schemeVal(schemeEval(schemeT))
 }
 
 func schemeEval(t schemeAst) int {
-	// **** TODO ****
-	return 0 // replace this
+	if len(t.parts) == 0 {
+		return stringToInt(t.Data())
+	}
+	opAst := t.parts[0]
+	if len(opAst.parts) != 0 {
+		// first position must be operator/identifier
+		panicWith("schemeEval:0", opAst)
+	}
+	op := opAst.Data()
+	args := []int{}
+	for _, arg := range t.parts[1:] {
+		args = append(args, schemeEval(arg))
+	}
+	var result int
+	switch op {
+	case "+":
+		result = args[0] + args[1]
+	case "*":
+		result = args[0] * args[1]
+	case "-":
+		result = args[0] - args[1]
+	default:
+		panic(op)
+	}
+	return result
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -235,7 +272,7 @@ func schemeEval(t schemeAst) int {
 ////////////////////////////////////////////////////////////////////////////////////////
 
 func isWhitespace(c byte) bool {
-	return slices.Contains([]byte{' ', '\t', '\n'}, c)
+	return slices.Contains([]byte{' ', '\t', '\n', '\r'}, c)
 }
 
 func isNumeric(c byte) bool {
