@@ -49,7 +49,7 @@ import (
 )
 
 // Pile of globals. You'll need them all. Don't add any.
-var kvsLockm sync.Mutex
+// var kvsLockm sync.Mutex
 var kvs map[string]string
 var kvsLock = makeChan("kvsLock", 1)
 var gatewayChan = makeChan("gatewayChan", 0)
@@ -103,13 +103,8 @@ func gateway() {
 	for {
 		select {
 		case loginRequest := <-gatewayChan:
-			handlerChan := makeChan("handler-"+loginRequest.user+"-chan", 0)
 			handlerWg.Add(1)
-			go handler(loginRequest.user, handlerChan)
-			loginRequest.channel <- packet{
-				user:    loginRequest.user,
-				channel: handlerChan,
-			}
+			go handler(loginRequest.user, loginRequest.channel)
 			logSend(loginRequest.channel, "gateway", loginRequest)
 
 		case <-gatewayQuitChan:
@@ -135,15 +130,8 @@ func systemInit() {
 // }
 
 func kvsGet(key string) string {
-	kvsLockm.Lock()
-	defer kvsLockm.Unlock()
-
-	// <- kvsLock
-	// defer func() { kvsLock <- packet{} }()
-
-	// kvsLock <- packet{}
-	// defer func() { <-kvsLock }()
-	// defer func() { kvsLock <- packet{}}()
+	<- kvsLock
+	defer func() { kvsLock <- packet{} }()
 	return kvs[key]
 }
 
@@ -153,14 +141,8 @@ func kvsGet(key string) string {
 // }
 
 func kvsSet(key string, value string) {
-	<-kvsLock
+	<- kvsLock
 	defer func() { kvsLock <- packet{} }()
-	// kvsLockm.Lock()
-	// defer kvsLockm.Unlock()
-	// kvsLock <- packet{}
-	// defer func() { <-kvsLock }()
-	// <- kvsLock
-	// defer func() { kvsLock <- packet{}}()
 	kvs[key] = value
 }
 
@@ -175,14 +157,8 @@ func kvsSet(key string, value string) {
 // }
 
 func kvsString() string {
-	// <- kvsLock
-	// defer func() { kvsLock <- packet{} }()
-	// kvsLockm.Lock()
-	// defer kvsLockm.Unlock()
-	// kvsLock <- packet{}
-	// defer func() { <-kvsLock }()
-	// <- kvsLock
-	// defer func() { kvsLock <- packet{} }()
+	<- kvsLock
+	defer func() { kvsLock <- packet{} }()
 
 	out := "kvs contents:\n"
 	for key, value := range kvs {
@@ -207,22 +183,18 @@ func kvsPrint() {
 // 	}
 // }
 
+// maybe log in handler
 func handler(user string, userChan chan packet) {
 	defer handlerWg.Done()
-	// kvsLock <- packet{}
-	// defer func() { <-kvsLock }()
 	for {
-		req := <-userChan
+		req := <- userChan
 		switch req.cmd {
 		case "get":
 			req.result = kvsGet(req.arg0)
 			userChan <- req
 		case "set":
-			kvsSet(req.arg0, req.arg1)
-			req.result = "ok"
-			userChan <- req
+			kvsSet(req.arg0, req.arg1) // may not be required
 		case "quit":
-			close(userChan)
 			return
 		default:
 			log("Unknown command received: ", req.cmd)
@@ -237,8 +209,6 @@ func handler(user string, userChan chan packet) {
 // }
 
 func get(user string, handlerChan chan packet, key string) string {
-	// <- kvsLock
-	// defer func() { kvsLock <- packet{} }()
 	getPacket := packet{
 		user:    user,
 		channel: handlerChan,
@@ -262,8 +232,6 @@ func get(user string, handlerChan chan packet, key string) string {
 // }
 
 func set(user string, handlerChan chan packet, key, value string) {
-	// <- kvsLock
-	// defer func() { kvsLock <- packet{} }()
 	setPacket := packet{
 		user:    user,
 		channel: handlerChan,
@@ -273,7 +241,6 @@ func set(user string, handlerChan chan packet, key, value string) {
 	}
 	handlerChan <- setPacket
 	logSend(handlerChan, user, setPacket)
-	<-handlerChan
 }
 
 // A user goroutine. It should
@@ -291,20 +258,21 @@ func set(user string, handlerChan chan packet, key, value string) {
 
 func user(user string, actions func(string, chan packet)) {
 	defer userWg.Done()
-	myChan := makeChan("user-"+user+"-chan", 0)
+
+	myChan := makeChan("user-" + user +"-chan", 0)
 	loginRequest := packet{user: user, channel: myChan}
 
 	gatewayChan <- loginRequest
-	logSend(gatewayChan, "user-"+user, loginRequest)
+	logSend(gatewayChan, "user-"+ user, loginRequest)
 
-	handler := <-myChan
-	logReceive(myChan, "user-"+user, handler)
-
-	actions(user, handler.channel)
+	actions(user, myChan)
 
 	quitPacket := packet{user: user, cmd: "quit"}
-	handler.channel <- quitPacket
-	logSend(handler.channel, "user-"+user, quitPacket)
+
+	myChan <- quitPacket
+	logSend(myChan, "user-"+ user, quitPacket)
+
+	close(myChan)
 }
 
 //////////////
@@ -383,5 +351,6 @@ func main() {
 	logSend(gatewayQuitChan, "main", packet{})
 	serverWg.Wait()
 }
+
 
 // DO NOT PUT ANYTHING AFTER main. THE AUTOGRADER WILL REMOVE IT.

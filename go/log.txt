@@ -1,46 +1,43 @@
-msg sent by user-Bongo to gatewayChan: user=Bongo cmd= arg0= arg1= result= channel=user-Bongo-chan
-msg delivered to user-Bongo from user-Bongo-chan: user=Bongo cmd= arg0= arg1= result= channel=handler-Bongo-chan
 msg sent by gateway to user-Bongo-chan: user=Bongo cmd= arg0= arg1= result= channel=user-Bongo-chan
-msg sent by Bongo to handler-Bongo-chan: user=Bongo cmd=set arg0=c arg1=3 result= channel=handler-Bongo-chan
-msg sent by user-Bingo to gatewayChan: user=Bingo cmd= arg0= arg1= result= channel=user-Bingo-chan
-msg sent by Bongo to handler-Bongo-chan: user=Bongo cmd=get arg0=a arg1= result= channel=handler-Bongo-chan
-msg delivered to user-Bingo from user-Bingo-chan: user=Bingo cmd= arg0= arg1= result= channel=handler-Bingo-chan
-msg sent by gateway to user-Bingo-chan: user=Bingo cmd= arg0= arg1= result= channel=user-Bingo-chan
-msg delivered to Bongo from handler-Bongo-chan: user=Bongo cmd=get arg0=a arg1= result= channel=handler-Bongo-chan
-msg sent by Bingo to handler-Bingo-chan: user=Bingo cmd=set arg0=a arg1=1 result= channel=handler-Bingo-chan
-msg sent by user-Bonzo to gatewayChan: user=Bonzo cmd= arg0= arg1= result= channel=user-Bonzo-chan
-Bongo get result 0:  
-msg sent by Bingo to handler-Bingo-chan: user=Bingo cmd=get arg0=a arg1= result= channel=handler-Bingo-chan
-msg delivered to user-Bonzo from user-Bonzo-chan: user=Bonzo cmd= arg0= arg1= result= channel=handler-Bonzo-chan
+msg sent by user-Bongo to gatewayChan: user=Bongo cmd= arg0= arg1= result= channel=user-Bongo-chan
 msg sent by gateway to user-Bonzo-chan: user=Bonzo cmd= arg0= arg1= result= channel=user-Bonzo-chan
-msg delivered to Bingo from handler-Bingo-chan: user=Bingo cmd=get arg0=a arg1= result=1 channel=handler-Bingo-chan
-msg sent by Bongo to handler-Bongo-chan: user=Bongo cmd=set arg0=c arg1=bazola result= channel=handler-Bongo-chan
-msg sent by Bonzo to handler-Bonzo-chan: user=Bonzo cmd=set arg0=b arg1=2 result= channel=handler-Bonzo-chan
+msg sent by Bongo to user-Bongo-chan: user=Bongo cmd=set arg0=c arg1=3 result= channel=user-Bongo-chan
+msg sent by user-Bonzo to gatewayChan: user=Bonzo cmd= arg0= arg1= result= channel=user-Bonzo-chan
+msg sent by user-Bingo to gatewayChan: user=Bingo cmd= arg0= arg1= result= channel=user-Bingo-chan
+msg sent by gateway to user-Bingo-chan: user=Bingo cmd= arg0= arg1= result= channel=user-Bingo-chan
+msg sent by Bongo to user-Bongo-chan: user=Bongo cmd=get arg0=a arg1= result= channel=user-Bongo-chan
+msg sent by Bonzo to user-Bonzo-chan: user=Bonzo cmd=set arg0=b arg1=2 result= channel=user-Bonzo-chan
+msg sent by Bingo to user-Bingo-chan: user=Bingo cmd=set arg0=a arg1=1 result= channel=user-Bingo-chan
+msg sent by Bonzo to user-Bonzo-chan: user=Bonzo cmd=get arg0=a arg1= result= channel=user-Bonzo-chan
+msg sent by Bingo to user-Bingo-chan: user=Bingo cmd=get arg0=a arg1= result= channel=user-Bingo-chan
+msg delivered to Bongo from user-Bongo-chan: user=Bongo cmd=get arg0=a arg1= result= channel=user-Bongo-chan
+msg delivered to Bingo from user-Bingo-chan: user=Bingo cmd=get arg0=a arg1= result=1 channel=user-Bingo-chan
+msg delivered to Bonzo from user-Bonzo-chan: user=Bonzo cmd=get arg0=a arg1= result=1 channel=user-Bonzo-chan
+Bongo get result 0:  
 Bingo get result 0:  1
-msg sent by Bongo to handler-Bongo-chan: user=Bongo cmd=get arg0=ba arg1= result= channel=handler-Bongo-chan
-msg sent by Bonzo to handler-Bonzo-chan: user=Bonzo cmd=get arg0=a arg1= result= channel=handler-Bonzo-chan
-msg sent by Bingo to handler-Bingo-chan: user=Bingo cmd=set arg0=ab arg1=10 result= channel=handler-Bingo-chan
-msg delivered to Bongo from handler-Bongo-chan: user=Bongo cmd=get arg0=ba arg1= result= channel=handler-Bongo-chan
-msg delivered to Bonzo from handler-Bonzo-chan: user=Bonzo cmd=get arg0=a arg1= result=1 channel=handler-Bonzo-chan
-msg sent by Bingo to handler-Bingo-chan: user=Bingo cmd=set arg0=a arg1=3 result= channel=handler-Bingo-chan
-Bongo get result 1:  
 Bonzo get result 0:  1
-msg sent by user-Bongo to handler-Bongo-chan: user=Bongo cmd=quit arg0= arg1= result= channel=
-msg sent by Bingo to handler-Bingo-chan: user=Bingo cmd=get arg0=a arg1= result= channel=handler-Bingo-chan
-msg sent by Bonzo to handler-Bonzo-chan: user=Bonzo cmd=set arg0=ba arg1=4 result= channel=handler-Bonzo-chan
-msg delivered to Bingo from handler-Bingo-chan: user=Bingo cmd=get arg0=a arg1= result=3 channel=handler-Bingo-chan
-msg sent by Bonzo to handler-Bonzo-chan: user=Bonzo cmd=get arg0=ba arg1= result= channel=handler-Bonzo-chan
-Bingo get result 1:  3
-msg delivered to Bonzo from handler-Bonzo-chan: user=Bonzo cmd=get arg0=ba arg1= result=4 channel=handler-Bonzo-chan
-msg sent by user-Bingo to handler-Bingo-chan: user=Bingo cmd=quit arg0= arg1= result= channel=
+msg sent by Bongo to user-Bongo-chan: user=Bongo cmd=set arg0=c arg1=bazola result= channel=user-Bongo-chan
+msg sent by Bingo to user-Bingo-chan: user=Bingo cmd=set arg0=ab arg1=10 result= channel=user-Bingo-chan
+msg sent by Bonzo to user-Bonzo-chan: user=Bonzo cmd=set arg0=ba arg1=4 result= channel=user-Bonzo-chan
+msg sent by Bongo to user-Bongo-chan: user=Bongo cmd=get arg0=ba arg1= result= channel=user-Bongo-chan
+msg sent by Bingo to user-Bingo-chan: user=Bingo cmd=set arg0=a arg1=3 result= channel=user-Bingo-chan
+msg sent by Bonzo to user-Bonzo-chan: user=Bonzo cmd=get arg0=ba arg1= result= channel=user-Bonzo-chan
+msg delivered to Bongo from user-Bongo-chan: user=Bongo cmd=get arg0=ba arg1= result=4 channel=user-Bongo-chan
+msg sent by Bingo to user-Bingo-chan: user=Bingo cmd=get arg0=a arg1= result= channel=user-Bingo-chan
+msg delivered to Bonzo from user-Bonzo-chan: user=Bonzo cmd=get arg0=ba arg1= result=4 channel=user-Bonzo-chan
+Bongo get result 1:  4
+msg delivered to Bingo from user-Bingo-chan: user=Bingo cmd=get arg0=a arg1= result=3 channel=user-Bingo-chan
 Bonzo get result 1:  4
-msg sent by user-Bonzo to handler-Bonzo-chan: user=Bonzo cmd=quit arg0= arg1= result= channel=
+msg sent by user-Bongo to user-Bongo-chan: user=Bongo cmd=quit arg0= arg1= result= channel=
+msg sent by user-Bonzo to user-Bonzo-chan: user=Bonzo cmd=quit arg0= arg1= result= channel=
+Bingo get result 1:  3
+msg sent by user-Bingo to user-Bingo-chan: user=Bingo cmd=quit arg0= arg1= result= channel=
 kvs contents:
-    key: c, value: bazola
-    key: a, value: 3
     key: b, value: 2
+    key: a, value: 3
     key: ab, value: 10
     key: ba, value: 4
+    key: c, value: bazola
 
-msg sent by main to gatewayQuitChan: user= cmd= arg0= arg1= result= channel=
 Gateway received quit signal.
+msg sent by main to gatewayQuitChan: user= cmd= arg0= arg1= result= channel=
