@@ -28,49 +28,34 @@
 -- Difficulty: E
 -- Use foldr to add all the positive numbers in a list of integers.
 addPos :: [Int] -> Int
-addPos l = foldr add 0 l
-  where
-    add ele acc
-      |  ele > 0    = ele + acc
-      | otherwise   = acc
--- addPos l =  foldr add 0 l
---   where add ele acc | ele > 0 = ele + acc | otherwise = acc
+addPos l =
+  undefined
 
-
-addPosTest :: Bool
 addPosTest = addPos [1, 2, -3, 4] == 7
 
 -- Question 2
 -- Difficulty: M
 -- Use insert and foldr to sort a list of integers.
 sort :: [Int] -> [Int]
-sort [] = []
--- sort (x : xs) = insert x (sort xs)
-sort l = insert (head l) (sort (tail l))
-
+sort l =
+  undefined
 
 insert :: Int -> [Int] -> [Int]
 insert k [] = [k]
 insert k (x : l) | k <= x = k : x : l
 insert k (x : l) = x : insert k l
 
-sortTest :: Bool
 sortTest = sort [4, 2, 3, 1] == [1, 2, 3, 4]
 
 -- Question 3
 -- Difficulty: H
 -- Test if a list is reverse-sorted, i.e. sorted in non-increasing order.
 isRevSorted :: [Int] -> Bool
-isRevSorted [] = True -- vacously true
-isRevSorted (a : b : rest)
-  | length rest > 0  = a > b && isRevSorted rest
-isRevSorted _ = True
+isRevSorted l =
+  undefined
 
-
-isRevSortedTest0 :: Bool
 isRevSortedTest0 = isRevSorted [4, 3, 2, 1]
 
-isRevSortedTest1 :: Bool
 isRevSortedTest1 = not $ isRevSorted [4, 2, 3, 1]
 
 -- Question 4
@@ -81,16 +66,9 @@ sumPos l =
   sumPos0 l 0
 
 sumPos0 :: [Int] -> Int -> Int
-sumPos0 [] acc = acc
-sumPos0 (x : xl) acc
-  | x > 0       = sumPos0 xl acc + x
-  | otherwise   = sumPos0 xl acc
+sumPos0 = undefined
 
-
-sumPosTest :: Bool
 sumPosTest = sumPos [1, 2, -3, 4] == 7
-
-
 
 -- Question 5
 -- Difficult: M
@@ -99,21 +77,15 @@ split :: (a -> Bool) -> [a] -> ([a], [a])
 split p l = split0 p l ([], [])
 
 split0 :: (a -> Bool) -> [a] -> ([a], [a]) -> ([a], [a])
-split0 _ [] (a, b) = (a, b) -- return something
-split0 p (x : xl) (a, b)
-  | p x       = split0 p xl (x : a, b)
-  | otherwise = split0 p xl (a, x : b)
-
--- split even [1, 2, 3, 4, 5]
--- split (> 0) [-1, 0, 1, 2, 3]
+split0 = undefined
 
 -- This is a renaming of the split function from Assignment 4.
 splitR :: (a -> Bool) -> [a] -> ([a], [a])
 splitR p [] = ([], [])
 splitR p (x : l) =
   if p x then (x : l1, l2) else (l1, x : l2)
-  where
-    (l1, l2) = splitR p l
+ where
+  (l1, l2) = splitR p l
 
 setEq :: (Eq a) => [a] -> [a] -> Bool
 setEq l0 l1 = all (`elem` l0) l1 && all (`elem` l1) l0
@@ -128,8 +100,7 @@ splitTest = split (<= 3) [1, 4, 3, 5, 2] `pairSetEq` ([1, 3, 2], [4, 5])
 -- Write a version of the built-in head function that indicates an error using
 -- Maybe instead of raisihg an exception.
 hd :: [a] -> Maybe a
-hd [] = Nothing
-hd l = Just (head l)
+hd = undefined
 
 hdTest = hd "123" == Just '1' && hd "" == Nothing
 
@@ -141,9 +112,7 @@ hdTest = hd "123" == Just '1' && hd "" == Nothing
 -- "Just" and "Nothing" should not appear in your code.
 lookup2 :: (Eq a, Eq b) => a -> [(a, b)] -> [(b, c)] -> Maybe c
 lookup2 x m1 m2 = do
-  v1 <- lookup x m1
-  v2 <- lookup v1 m2
-  return v2
+  undefined
 
 lookup2Test = lookup2 1 [(0, 1), (1, 2), (2, 3)] [(0, 1), (1, 2), (2, 3)] == Just 3
 
@@ -154,17 +123,9 @@ lookup2Test = lookup2 1 [(0, 1), (1, 2), (2, 3)] [(0, 1), (1, 2), (2, 3)] == Jus
 -- floating point values, hex values are included. These values are written with
 -- an "x" preceding them, e.g. "x3ED4F". More precisely, they are strings starting
 -- with "x" followed by characters satisfying isHexChar (see below).
-
 parseHexConst :: Parser Exp
 parseHexConst str = do
-  PR _ r1     <- parseChar 'x' str -- eatup first
-  PR hex r2   <- parseHex r1
-  return $ PR (HexConst hex) r2
-
-
-
-parseHex :: Parser String
-parseHex = collect isHexChar
+  undefined
 
 isHexChar :: Char -> Bool
 isHexChar c = c `elem` "0123456789ABCDEF"
@@ -178,30 +139,10 @@ parseHexConstTest = parseHexConst "x33AF0(22.2)" == Just (PR (HexConst "33AF0") 
 -- surrounded by "[" and "].
 -- Hint: consider writing several independent parsers for different cases of
 -- list length, and combine them using +++.
-
-parseList :: Parser Exp
 parseList str = do
-  PR _ r1         <- parseChar '[' str
-  PR elems r2     <- parseExp r1
-  PR _ r3         <- parseChar ']' r2
-  return $ PR (List elems) r3
-
-
-
-
--- HALP
-
-
+  undefined
 
 parseListTest = parseList "[y,22.0,z(w)]" == Just (PR (List [Var "y", Const 22.0, App1 "z" (Var "w")]) "")
-
-
-
-
-
-
-
-
 
 -------------------------------
 -- Assignment 6 solution below

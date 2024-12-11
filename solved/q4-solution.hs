@@ -1,7 +1,7 @@
 import Data.List (findIndex)
 import Data.Maybe (fromJust, isJust, mapMaybe)
 -------- DON'T TOUCH THE ABOVE
--- import Debug.Trace (trace)
+
 
 -- This is a simplification of Assignment 10.
 -- The main difference is that instead of using (List [Atom "f", Number 2, Number 3)
@@ -87,48 +87,18 @@ eval env (App "if" [b,e0,e1]) =
   if eval env b == VBool True then  eval env e0  else eval env e1
 eval env (App "eq?" [e0,e1]) =
   VBool $ eval env e0 == eval env e1
-
--- change es to VSeq [V]
 eval env (App "mkSeq" es) =
-  -- trace ( "\nmkSeq:  " ++ show es)
   VSeq (map (eval env) es)
-
-
--- get index at in list
--- send expression to V or [V]?
--- run "(index (mkSeq 1 32 4) 0)"
--- eval env (App "index" [seqExp, iExp]) =
-  -- trace ( "\nindex:  " ++ show seqExp)
-  -- VNumber eval env (seqExp !! eval env (iExp) )
-  -- VNumber eval env (seqExp !!  iExp)
-
-  -- VNumber (eval env seqExp) !! iExp
-
-  -- VNumber eval env (seqExp !! iExp)
---  envValue env (seqExp !! iExp)
-  -- undefined
-
-
 eval env (App "index" [seqExp, iExp]) =
-  let
-    VSeq vs = eval env seqExp
-    VNumber i = eval env iExp
+  let VSeq vs = eval env seqExp
+      VNumber i = eval env iExp
   in
-    vs !! i
-  -- (eval env seqExp) !! (eval env iExp)
-
-
--- run "(force (delay 2))"
--- VNumber 2
--- eval env (App "delay" [e]) =
---   -- VNumber (eval env e)
---   undefined
-
+  vs !! i
 eval env (App "delay" [e]) =
   VClosure "" env [] e
-
-
-
+eval env (App "force" [e]) =
+  let VClosure "" env' [] e' = eval env e in
+  eval env' e'
 eval env (App f es) =
   let c@(VClosure fName fEnv vars body) = envValue f env in
   eval (extend (fName : vars) (c : (map (eval env) es)) fEnv) body

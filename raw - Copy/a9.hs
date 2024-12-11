@@ -54,8 +54,8 @@ isValue (Number _) = True
 isValue (String _) = True
 isValue (Bool _) = True
 isValue Nil = True
-isValue (List [Atom "cons", e0, e1]) = isValue e0 && isValue e1 -- is values
-isValue (List [Atom "list"]) = True -- scheme represents emptyy list
+isValue (List [Atom "cons", e0, e1]) = isValue e0 && isValue e1
+isValue (List [Atom "list"]) = True
 isValue _ = False
 
 -- This function uses the Syntax module. You can ignore how it's implemented, but
@@ -196,20 +196,8 @@ set' (Lens e ks) e0 = error $ "getUsingPath: " ++ show ks ++ show e
 replaceNth :: Int -> a -> [a] -> [a]
 replaceNth n x xs = take n xs ++ [x] ++ drop (n + 1) xs
 
--- findSubexp :: (Exp -> Bool) -> Exp -> Maybe Lens
--- findSubexp = undefined
-
 findSubexp :: (Exp -> Bool) -> Exp -> Maybe Lens
-findSubexp p e | p e = Just $ Lens e []
-findSubexp p (List es) = do
-  let mls = map (findSubexp p) es
-  k <- findIndex isJust mls -- maybe sub expression
-  let Just (Lens _ ks) = mls !! k -- ks is path up to this point
-  return $ Lens (List es) (k : ks)
-findSubexp _ _ = Nothing
-
-
-
+findSubexp = undefined
 
 -- Produce a string for the expression as in unparseExp, but enclose the
 -- expression addressed by the path with "[[" and "]]".
@@ -229,7 +217,7 @@ unparseLens (Lens e _) = unparseExp e
 -- data Env k = [(k,a)], but using the Map library (for no good
 -- reason). You can think of "newtype" as being the same as "data".
 newtype Env a = Env {envMap :: M.Map String a} deriving (Show)
--- env is a key value pair of string of type a
+
 -- Combine two environments.
 merge :: Env a -> Env a -> Env a
 merge (Env m0) (Env m1) = Env $ M.union m0 m1
@@ -288,48 +276,14 @@ instance Show Rule where
 -- Start searching from the first such argument. Note that the entire path from
 -- the top of the original expression to redex needs to be collected.
 -- E.g.
--- nextRedex (parseExp "(cons (list) (cons (+ 1 2) (l ist)))"
+-- nextRedex (parseExp "(cons (list) (cons (+ 1 2) (list)))"
 -- = Just (Lens (...) [2,1])
 -- since the first argument to the leftmost "cons" is "(list)", which we have
 -- defined as the value representing the empty list. [2] addresses the second
 -- cons expression, and so [2,1] addresses "(+ 1 2)", which is a redex since
 -- it is not a value but is a function applied to value arguments.
--- nextRedex :: Exp -> Maybe Lens
--- nextRedex = undefined
-
-
 nextRedex :: Exp -> Maybe Lens
-nextRedex e =
-  -- if have expression and is a value return nothing because
-  -- because no reducable expression the value
-
-
-  failingIf (isValue e) (fmap (Lens e) (path e))
-  where
-    -- path e: the path to the next redex in e, if one exists
-
-    -- evaluate e1 with predicate isvalue, if true then return empty path
-
-    -- e2 what we do if false
-    --
-    path (List [Atom "if", e1, e2, e3]) | isValue e1 = Just []
-
-    -- 1 : return value of path
-    -- if e1 is not a value then it already is
-    -- if conditional hasnt been evaluated. it is self contained. something can be reduced
-    path (List [Atom "if", e1, _, _]) = fmap (1 :) (path e1)
-    -- all other expressions
-    -- Just [] its empty cause we can evaluate here
-    path (List (Atom _ : es)) | all isValue es = Just []
-    path (List (Atom _ : es)) = fmap (k + 1 :) (path (es !! k))
-      where
-        -- if all args are values we can reduce there,
-        -- if not we find first argument not a value (k ~ findIndex) first argument not a value, we know something is reducable in that.
-        -- want to find where non value is
-        k = fromJust $ findIndex (not . isValue) es
-
-    path _ = Nothing
-
+nextRedex = undefined
 
 -- A "standard" rule is a rule whose ruleRhs is an expression. The function
 -- takes strings as arguments and parses them.
@@ -356,26 +310,8 @@ compileDef (List [Atom "define", lhs@(List (Atom f : vars)), e]) =
 compileDef e = error $ "compileDef: not a def " ++ show e
 
 -- matchPat lhs rhs: find a substitution s such that subst lhs = rhs.
--- matchPat :: Exp -> Exp -> Maybe Subst
--- matchPat = undefined
-
-
--- find allowable expressions to substitute for variable a
-
--- returna list
 matchPat :: Exp -> Exp -> Maybe Subst
-matchPat (Atom x) e' = Just $ extend x e' empty
-matchPat (List (f : es)) (List (f' : es'))
--- f f' are atoms with a string can think of function names
--- if two are not equal canot pattern match
---
-  | f == f' && length es == length es' = matchPats es es'
-matchPat e e' | e == e' = Just empty
-matchPat _ _ = Nothing
-
--- extend takes x and e makes new kv pair and adds that to the env
-
-
+matchPat = undefined
 
 -- matchPats lhss rhss: find a substitution s such that subst lhs = rhs for each
 -- corresponding pair of elements in lhss and rhss.

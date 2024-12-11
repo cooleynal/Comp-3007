@@ -40,26 +40,15 @@ data Archetree
   deriving (Eq, Show)
 
 -- QUESTION 1
--- instance Treeish Archetree where
---   children = undefined
---   info = undefined
---   build = undefined
-
 instance Treeish Archetree where
-  -- probably wrong, need to fetch children
   children :: Archetree -> [Archetree]
-  -- children a = [a]
-  children a = [a]
+  children (Node str archs) = archs
 
-  -- not told desired format
   info :: Archetree -> String
-  info a = show a
+  info (Node str archs) = str
 
-  -- not feeling it
   build :: String -> [Archetree] -> Maybe Archetree
-  build s (a : ax) = Just a
-  build _ _ = Nothing
-
+  build str arch = Just (Node str arch)
 
 assertArcheTree =
   children at == [at0, at1, at2]
@@ -76,28 +65,18 @@ data BT = BTLeaf String | BTNode BT BT
   deriving (Eq, Show)
 
 -- QUESTION 2
--- instance Treeish BT where
---   children :: BT -> [BT]
---   children = undefined
---   info :: BT -> String
---   info = undefined
---   build :: String -> [BT] -> Maybe BT
---   build = undefined
-
-
 instance Treeish BT where
   children :: BT -> [BT]
-  children bt = [bt]
+  children (BTLeaf _) = []
+  children (BTNode bt1 bt2) = [bt1, bt2]
 
   info :: BT -> String
-  info bt = show bt
+  info (BTLeaf str) = str
+  info (BTNode bt1 bt2) = ""
 
-  -- not feeling it either not sure what we should do
   build :: String -> [BT] -> Maybe BT
-  build s (bt : btx) = Just bt
-  build _ _ = Nothing
-
-
+  build str [bt1, bt2] = Just (BTNode bt1 bt2)
+  build bt1 bt2 = Nothing
 
 assertBT =
   children bt == [bt0, bt1]
@@ -123,23 +102,29 @@ class (Eq a) => Lensable a where
   get :: Lens a -> Maybe a
   set :: Lens a -> a -> a
 
--- QUESTION 3
--- instance Lensable BT where
---   get = undefined
---   set = undefined
-
-
+-- -- QUESTION 3
 instance Lensable BT where
-
   get :: Lens BT -> Maybe BT
-  get lbt = Just (BTLeaf "7") -- wrong
-  -- get lbt = Just (BTLeaf "7")
-  -- get lbt = Just(findIndex )
-
+  get (Lens tree path)= geter path tree
+    where
+      geter [] (BTLeaf s) = Just (BTLeaf s)
+      geter [] (BTNode bt1 bt2) = Nothing
+      geter (x : xs) (BTNode bt1 bt2)
+        | x == 0 = geter xs bt1
+        | x == 1 = geter xs bt2
+        | otherwise = Nothing
+      geter bt1 bt2 = Nothing
 
   set :: Lens BT -> BT -> BT
-  set lbt bt = BTLeaf "7" -- wrong
-  -- set lbt bt = undefined
+  set (Lens tree path) nv = seter path tree
+    where
+      seter [] (BTLeaf str) = nv
+      seter [] (BTNode bt1 bt2) = tree
+      seter (x : xs) (BTNode bt1 bt2)
+        | x == 0 = seter xs bt1
+        | x == 1 = seter xs bt2
+        | otherwise = tree
+      seter bt1 bt2 = tree
 
 
 
@@ -166,8 +151,7 @@ assertLensableBTSet =
 -- Does the treeish object have a subtree (possibly the whole tree) that
 -- satisfies the predicate?
 hasSubtree :: (Treeish a) => (a -> Bool) -> a -> Bool
-hasSubtree = undefined
--- firstSuccess here likely
+hasSubtree pred tree = pred tree || any (hasSubtree pred) (children tree)
 
 assertHasSubtree =
   hasSubtree (== bigBT 1) (bigBT 2)
@@ -175,7 +159,16 @@ assertHasSubtree =
 -- QUESTION 5
 -- The path to the subtree that satisfies the predicate, if any.
 findSubtree :: (Treeish a) => (a -> Bool) -> a -> Maybe Path
-findSubtree = undefined
+findSubtree pred tree
+  | pred tree = Just []
+  | otherwise = search 0 (children tree)
+  where
+    search _ [] = Nothing
+    search idx (x : xs) =
+      case findSubtree pred x of
+        Just subpath -> Just (idx : subpath)
+        Nothing -> search (idx + 1) xs
+
 
 assertFindSubtree =
   Just [0, 0] == findSubtree (== bigBT 1) (bigBT 3)
@@ -233,29 +226,15 @@ skRuleSet =
 -- Match sk0 sk1: Compute a substition s, if one exists, such that
 -- applySubst s sk0 = sk1. You will find useful the function combineMatches,
 -- defined below.
--- match :: SK -> SK -> Maybe Subst
--- match = undefined
-
-
-
--- wrong missing lots
-match :: SK -> SK-> Maybe Subst
-match a b
-  | a == b          = Nothing
-  -- | otherwise       = combineMatches a b -- not sure how to send to maybe or what to do
-
-
-
--- match :: SK -> SK-> Maybe Subst
--- match (Atom x) e' =
---   Just $ extend x e' empty
--- match ((f : es)) ((f' : es'))
---   | f == f' && length es == length es' =
---       matchPats es es'
--- match e e' | e == e' = Just empty
--- match _ _ = Nothing
-
-
+match :: SK -> SK -> Maybe Subst
+match (Atom x) sk = Just [(x, sk)]
+match (App sk0 sk1) (App sk2 sk3) = do
+  s1 <- match sk0 sk2
+  s2 <- match sk1 sk3
+  combineMatches (Just s1) (Just s2)
+match sk0 sk1
+  | sk0 == sk1 = Just []
+  | otherwise = Nothing
 
 assertMatch =
   let x = Atom "x"
@@ -303,7 +282,17 @@ assertApplyRuleSet1 =
 -- Nothing is returned exactly if there is no rule in skRuleSet and no subexpression
 -- (including the whole expression) where the rule application succeeds.
 reduce1 :: SK -> Maybe SK
-reduce1 = undefined
+reduce1 sk
+  | succeeds (applyRuleSet sk) = applyRuleSet sk
+reduce1 (App sk0 sk1)
+  | succeeds (applyRuleSet sk0) = do
+      sk0' <- applyRuleSet sk0
+      return (App sk0' sk1)
+  | succeeds (applyRuleSet sk1) = do
+      sk1' <- applyRuleSet sk1
+      return (App sk0 sk1')
+reduce1 _ = Nothing
+
 
 -- Complete reduce an SK expression, i.e. apply reductions anywhere in the
 -- expression until no longer possible.

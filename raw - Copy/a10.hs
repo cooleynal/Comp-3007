@@ -2,9 +2,6 @@
 
 module SchemeEval where
 
--- import Text.Pretty.Simple (pPrint)
--- import Debug.Trace (trace)
-
 import Data.List (find, intercalate, nub)
 import Data.Map qualified as M
 import Data.Maybe (fromJust, isJust, mapMaybe)
@@ -105,228 +102,11 @@ primitives =
       ("cdr", (1, \[VCons _ y] -> y))
     ]
 
-specialForms = ["if", "let", "let*", "letrec", "lambda", "lambdaf"]
-
 isPrimitive :: String -> Bool
 isPrimitive x = M.member x primitives
 
-
--- run "(zip (cons 1 2) (cons 1 2))"
-
-
-
-
-
-
 -- Evaluate an expression
 eval :: Env -> Exp -> V
-
--- run "(test-letrec-0)"
--- eval env (List (Atom "letrec" : es) ) =
-  -- trace ("\n LETREC n")
-  -- trace (show es)
-  -- VNil
-  -- VFunc (evalApply VNil )
-
-
-
--- run "(test-letrec-0)"
-
--- VFunc ([V] -> V)
--- evalApply :: V -> [V] -> V
-
--- VFunc(_)
--- Valid hole fits include
---     head
---     last
---   Valid refinement hole fits include
-
---     applyPrimitive _
---     evalApply _
-
---     foldl1 _
---     foldr1 _
---     head _
---     last _
-
--- eval env (List (Atom "letrec" : es)) =
---   VFunc $ evalApply (map (eval env) es)
-
--- eval env (List (Atom "letrec" : es)) =
---   VFunc $ evalApply _
-
-  -- in VFunc f
-  -- trace ("\n ES: \n" ++ show es)
-  -- trace ("\n ES: \n" ++ show (head es))
-  -- trace ("\n env: \n" ++ show env)
-  -- VFunc(evalApply (eval env (head es)))
-  -- VFunc(applyPrimitive _)
-  -- VNil
-
-
-
-
-
-
-
-    -- List [Atom "define",List [Atom "test-string-case-0"],List [Atom "let",List [List [Atom "f",List [Atom "lambda",List [],String "bazola"]]],List [Atom "eq?",Number 2,List [Atom "string-case",List [Atom "f"],List [List [String "foo",List [Atom "+",Number 1,Number 17]],List [String "bar",List [Atom "+",Number 1,Number 17]],List [String "bazola",List [Atom "+",Number 1,Number 1]],List [String "gleep",List [Atom "+",Number 1,Number 17]]],List [Atom "+",Number 1,Number 41]]]]]
-
-
--- run "(test-string-case-0)"
--- List (String s : es)
--- eval env (List (String s : es) ) =
---   let
---     v = VString s
---   in
---     trace ("\n STRING: " ++ show env) v
-
-eval env (List (String s : es) ) = VNil
-  -- let
-  --   v = VString s
-  -- in
-  --   -- trace ("\n STRING: " ++ show env) v
-
-
-
--- ghci> str <- readFile "a10.txt"
--- ghci> parseDefs str
-
-
--- List [Atom "let",List [List [Atom "x",Number 0],List [Atom "y",Number 1]],List [Atom "+",Atom "x",Atom "y"]]
-
--- List [List [Atom "x",Number 0],List [Atom "y",Number 1]]
--- List [Atom "+",Atom "x",Atom "y"]
-
--- extend :: [String] -> [V] -> Env -> Env
--- eval :: Env -> Exp -> V
--- evalApply :: V -> [V] -> V
--- run "(test-let-0)"
-eval env (List (Atom "let" : es) ) =
-
-  eval newEnv (es !! 1) -- cant be a list, perhaps recursion
-  where
-    list = es !! 0
-    lb = letBindings list
-    newEnv = extend (map fst lb) (map (eval env) (map snd lb)) env
-
-
-  -- let
-    -- list = es !! 0
-    -- lb = letBindings list
-  -- in
-  --   trace ("\n Head ES: " ++ show list)
-  --   trace ("\n LET BINDINGS: " ++ show lb) -- LET BINDINGS: [("x",Number 0),("y",Number 1)]
-  --   trace ("\n map fst lb: " ++ show (map fst lb))
-  --   trace ("\n map snd lb: " ++ show (map snd lb))
-
-  -- where
-  --   newEnv = extend (map fst lb) (map (eval env) (map snd lb)) env
-    -- extend (extractFirst (map fst lb)) (extractSecond (es !! 0)) env
-
-    -- evalApply (eval env (head es)) (map (eval env) (tail es))
-
--- need to add first binding to environment
--- need to add second binding to environment and evaluate with both bindings
--- second binding might have stuff the first binding to work
-
-
-eval env (List (Atom "let*" : List bindings : body : [])) =
-  eval newEnv body
-  where
-    newEnv = foldl extendBinding env bindings
-    extendBinding e (List [Atom var, expr]) =
-      extend [var] [eval e expr] e
-
-
-
-
--- closure is like a snapshot of the environment at the time the function was defined
--- closure is like a function where env has a closed context
--- time function defined everything in env at the time is all the function needs
--- closer is adding 17 to x, parameter x
--- closer are for function definitions, + x 17
--- closure is where you make the function definition
--- abstract express -> function can be applied
-
--- dont need to worry about eval apply, its like a lower level
-
--- need to just make closure
-
--- List [Atom "define",List [Atom "test-lambda-0"],List [Atom "eq?",Number 20,List [List [Atom "lambda",List [Atom "x"],List [Atom "+",Atom "x",Number 17]],Number 3]]]
-
--- List [Atom "lambda",List [Atom "x"],List [Atom "+",Atom "x",Number 17]],Number 3
-
--- run "(test-lambda-0)"
--- ghci> str <- readFile "a10.txt"
--- ghci> parseDefs str
-
-
--- evalApply :: V -> [V] -> V
-          -- fnName,  env,    parms,   body
--- data V = VClosure String Env [String] Exp
-
-
--- dont have to pattern match like rest of the string, can use square bracket
-eval env (List [Atom "lambda", List a, b])  =
-  let
-    list = a
-    -- lb = letBindings list
-    dv = VClosure "lambda" env (stringem a) b
-    -- geter = envValue "x" env
-    -- lk = envValue "x" env
-
-  in
-    -- trace ("\n geter: " ++ show geter)
-    -- trace ("\n lookup x: " ++ show lk)
-    -- trace ("\n a: " ++ show a)
-    -- trace ("\n b: " ++ show b)
-
-    -- trace ("\n LET BINDINGS: " ++ show lb) -- LET BINDINGS: [("x",Number 0),("y",Number 1)]
-    -- trace ("\n map fst lb: " ++ show (map fst lb))
-    -- trace ("\n map snd lb: " ++ show (map snd lb))
-  -- VNil
-  dv
-
-
-eval env (List [Atom "lambdaf", List a, b])  =
-  let
-    list = a
-    -- lb = letBindings list
-    dv = VClosure "lambdaf" env (stringem a) b
-    -- geter = envValue "x" env
-    -- lk = envValue "x" env
-
-  in
-    -- trace ("\n geter: " ++ show geter)
-    -- trace ("\n lookup x: " ++ show lk)
-    -- trace ("\n a: " ++ show a)
-    -- trace ("\n b: " ++ show b)
-
-    -- trace ("\n LET BINDINGS: " ++ show lb) -- LET BINDINGS: [("x",Number 0),("y",Number 1)]
-    -- trace ("\n map fst lb: " ++ show (map fst lb))
-    -- trace ("\n map snd lb: " ++ show (map snd lb))
-  -- VNil
-  dv
-
-
--- ghci> str <- readFile "a10.txt"
--- ghci> parseDefs str
-
-
--- [[Atom "zip",Atom "l0",Atom "l1"],List [Atom "if",List [Atom "null?",Atom "l0"],List [Atom "list"],List [Atom "if",List [Atom "null?",Atom "l1"],List [Atom "list"],List [Atom "cons",List [Atom "cons",List [Atom "car",Atom "l0"],List [Atom "car",Atom "l1"]],List [Atom "zip",List [Atom "cdr",Atom "l0"],List [Atom "cdr",Atom "l1"]]]]]]
-
-eval env (List (Atom "zip" : es) ) =
-
-  let
-    list = es
-    -- lb = letBindings list
-  in
-    -- trace ("\n Head ES: " ++ show (head list))
-  VNil
-
-
-
-
 eval env (Atom x) =
   envValue x env
 eval env (String s) =
@@ -334,7 +114,6 @@ eval env (String s) =
 eval env (Bool b) =
   VBool b
 eval env (Number n) =
-  -- trace ("\n NUMBER N: " ++ show n)
   VNumber n
 eval env Nil =
   VNil
@@ -355,9 +134,6 @@ eval env e@(List (Atom "if" : _)) =
 eval env (List (Atom f : args))
   | isPrimitive f =
       applyPrimitive f (map (eval env) args)
-eval env (List (Atom f : args))
-  | f `elem` specialForms =
-      error $ "eval: special form " ++ f ++ " not implemented"
 eval env (List (e : args)) =
   evalApply (eval env e) (map (eval env) args)
 
@@ -419,5 +195,3 @@ run :: String -> IO V
 run e = do
   str <- readFile "a10.txt"
   return $ eval (compileDefs (parseDefs str)) (parseExp e)
-
-
