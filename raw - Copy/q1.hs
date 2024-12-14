@@ -27,12 +27,19 @@ member x (Entry _ _ d) = member x d
 
 -- pre v d: a list of all keys in d whose corresponding value is v
 pre :: String -> Dict -> [String]
-pre = undefined
+pre s Mt = []
+pre s (Entry k v d) | s == v = k : pre s d
+pre s (Entry _ _ d) = pre s d
 
 -- difference d1 d2: like d1, but remove any key (with its value) that is also
 -- in d2
 difference :: Dict -> Dict -> Dict
-difference = undefined
+difference Mt _ = Mt
+difference _ Mt = Mt
+difference (Entry k1 v1 dr1) d2 | not (member k1 d2) = Entry k1 v1 (difference dr1 d2)
+difference (Entry k1 v1 dr1) d2 = difference dr1 d2
+
+
 
 -- Like the GetRow query in A2
 select :: [[Int]] -> Int -> [Int]
@@ -42,17 +49,61 @@ select _ _ = []
 
 -- Replace all negative integers by 0. Assume the DB is valid.
 unNeg :: DB -> DB
-unNeg = undefined
+unNeg db = map unNegRow db
+  where
+    unNegRow r = map adjust r
+    adjust x = if x < 0 then 0 else x
+
+
+-- tt :: DB -> DB
+-- tt db = processDB db
+--   where
+--     processDB [] = []
+--     processDB (row:rows) = processRow row : processDB rows
+--     processRow [] = []
+--     processRow (x:xs) = adjust x : processRow xs
+--     adjust x = max x 0
+
+
+unNeg2 :: DB -> DB
+unNeg2 db = processDB db
+  where
+    processDB [] = []
+    processDB (row:rows) = processRow row : processDB rows
+    processRow [] = []
+    processRow (x:xs) = max x 0 : processRow xs
+    -- adjust x = max x 0
+
+
+unNeg3 :: DB -> DB
+unNeg3 db = pDB db
+  where
+    pDB [] = []
+    pDB (r : rs) = pRow r : pDB rs
+    pRow [] = []
+    pRow (x : xs) = max x 0 : pRow xs
+
+
 
 -- Remove any rows that contain at least one negative value.  Assume the DB is valid.
 deNeg :: DB -> DB
-deNeg = undefined
+deNeg db = delRow db
+  where
+    delRow [] = []
+    delRow (r : rs) = pDel r : delRow rs
+    pDel (x : xs)
+      | x < 0 = pDel xs
+      | otherwise = x : pDel xs
+
 
 -- intersect db1 db2: like db1, except discarding any rows whose key is not in
 -- db2. I.e. discard (from db1) any row [x,...] where select x db2 = [].  Assume
 -- the DBs are valid.
 intersect :: DB -> DB -> DB
-intersect = undefined
+intersect [] db2 = []
+intersect (r : rx) db2
+  | select db2 (head r) /= [] = r : intersect rx db2
+intersect (_ : rx) db2 = intersect rx db2
 
 -----------------------
 -- Examples for testing

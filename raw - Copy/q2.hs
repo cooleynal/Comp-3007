@@ -27,9 +27,22 @@
 -- Question 1
 -- Difficulty: E
 -- Use foldr to add all the positive numbers in a list of integers.
+-- addPos :: [Int] -> Int
+-- addPos l = foldr sumer 0 l
+--   where
+--     sumer x acc = if x > 0 then x + acc else acc
+
+
 addPos :: [Int] -> Int
-addPos l =
-  undefined
+addPos l = foldr sumer 0 l
+  where
+    sumer x acc
+      | x > 0 = x + acc
+      | otherwise = acc
+
+
+
+
 
 addPosTest = addPos [1, 2, -3, 4] == 7
 
@@ -37,8 +50,7 @@ addPosTest = addPos [1, 2, -3, 4] == 7
 -- Difficulty: M
 -- Use insert and foldr to sort a list of integers.
 sort :: [Int] -> [Int]
-sort l =
-  undefined
+sort l = foldr insert [] l
 
 insert :: Int -> [Int] -> [Int]
 insert k [] = [k]
@@ -51,8 +63,12 @@ sortTest = sort [4, 2, 3, 1] == [1, 2, 3, 4]
 -- Difficulty: H
 -- Test if a list is reverse-sorted, i.e. sorted in non-increasing order.
 isRevSorted :: [Int] -> Bool
-isRevSorted l =
-  undefined
+isRevSorted [] = True
+isRevSorted [_] = True
+isRevSorted (x : y : rest)
+  | x >= y    = isRevSorted (y : rest)
+  | otherwise = False
+
 
 isRevSortedTest0 = isRevSorted [4, 3, 2, 1]
 
@@ -66,7 +82,10 @@ sumPos l =
   sumPos0 l 0
 
 sumPos0 :: [Int] -> Int -> Int
-sumPos0 = undefined
+sumPos0 [] z = z
+sumPos0 (x : l) z
+  | x > 0 = sumPos0 l (x + z)
+sumPos0 (_ : l) z = sumPos0 l z
 
 sumPosTest = sumPos [1, 2, -3, 4] == 7
 
@@ -77,7 +96,9 @@ split :: (a -> Bool) -> [a] -> ([a], [a])
 split p l = split0 p l ([], [])
 
 split0 :: (a -> Bool) -> [a] -> ([a], [a]) -> ([a], [a])
-split0 = undefined
+split0 p [] z = z
+split0 p (x : l) (l1, l2) | p x = split0 p l (x : l1, l2)
+split0 p (x : l) (l1, l2) = split0 p l (l1, x : l2)
 
 -- This is a renaming of the split function from Assignment 4.
 splitR :: (a -> Bool) -> [a] -> ([a], [a])
@@ -100,7 +121,8 @@ splitTest = split (<= 3) [1, 4, 3, 5, 2] `pairSetEq` ([1, 3, 2], [4, 5])
 -- Write a version of the built-in head function that indicates an error using
 -- Maybe instead of raisihg an exception.
 hd :: [a] -> Maybe a
-hd = undefined
+hd [] = Nothing
+hd (x : l) = Just x
 
 hdTest = hd "123" == Just '1' && hd "" == Nothing
 
@@ -112,7 +134,8 @@ hdTest = hd "123" == Just '1' && hd "" == Nothing
 -- "Just" and "Nothing" should not appear in your code.
 lookup2 :: (Eq a, Eq b) => a -> [(a, b)] -> [(b, c)] -> Maybe c
 lookup2 x m1 m2 = do
-  undefined
+  v1 <- lookup x m1
+  lookup v1 m2
 
 lookup2Test = lookup2 1 [(0, 1), (1, 2), (2, 3)] [(0, 1), (1, 2), (2, 3)] == Just 3
 
@@ -125,10 +148,15 @@ lookup2Test = lookup2 1 [(0, 1), (1, 2), (2, 3)] [(0, 1), (1, 2), (2, 3)] == Jus
 -- with "x" followed by characters satisfying isHexChar (see below).
 parseHexConst :: Parser Exp
 parseHexConst str = do
-  undefined
+  PR _ r0 <- parseChar 'x' str
+  PR hstr r1 <- parseHexString r0
+  return $ PR (HexConst hstr) r1
 
 isHexChar :: Char -> Bool
 isHexChar c = c `elem` "0123456789ABCDEF"
+
+parseHexString :: Parser String
+parseHexString = collect isHexChar
 
 parseHexConstTest = parseHexConst "x33AF0(22.2)" == Just (PR (HexConst "33AF0") "(22.2)")
 
@@ -140,7 +168,32 @@ parseHexConstTest = parseHexConst "x33AF0(22.2)" == Just (PR (HexConst "33AF0") 
 -- Hint: consider writing several independent parsers for different cases of
 -- list length, and combine them using +++.
 parseList str = do
-  undefined
+  PR _ r0 <- parseChar '[' str
+  PR l r1 <- parseListArgs r0
+  return (PR (List l) r1)
+
+
+parseEndListArgs str = do
+  PR _ rest0 <- parseChar ']' str
+  return $ PR [] rest0
+
+parseLastListArg str = do
+  PR arg rest0 <- parseExp str
+  PR _ rest1 <- parseChar ']' rest0
+  return $ PR [arg] rest1
+
+parseListArg str = do
+  PR arg rest0 <- parseExp str
+  PR _ rest1 <- parseChar ',' rest0
+  PR args rest2 <- parseListArgs rest1
+  return $ PR (arg : args) rest2
+
+
+
+
+
+parseListArgs :: Parser [Exp]
+parseListArgs = parseEndListArgs +++ parseLastListArg +++ parseListArg
 
 parseListTest = parseList "[y,22.0,z(w)]" == Just (PR (List [Var "y", Const 22.0, App1 "z" (Var "w")]) "")
 

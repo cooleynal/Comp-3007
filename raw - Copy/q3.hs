@@ -42,13 +42,12 @@ data Archetree
 -- QUESTION 1
 instance Treeish Archetree where
   children :: Archetree -> [Archetree]
-  children (Node str archs) = archs
-
+  children (Node str arch) = arch
   info :: Archetree -> String
-  info (Node str archs) = str
-
+  info (Node str arch) = str
   build :: String -> [Archetree] -> Maybe Archetree
   build str arch = Just (Node str arch)
+
 
 assertArcheTree =
   children at == [at0, at1, at2]
@@ -67,16 +66,18 @@ data BT = BTLeaf String | BTNode BT BT
 -- QUESTION 2
 instance Treeish BT where
   children :: BT -> [BT]
-  children (BTLeaf _) = []
-  children (BTNode bt1 bt2) = [bt1, bt2]
+  children (BTLeaf _)= []
+  children (BTNode bt0 bt1) = [bt0, bt1]
 
   info :: BT -> String
   info (BTLeaf str) = str
-  info (BTNode bt1 bt2) = ""
+  info _ = ""
 
   build :: String -> [BT] -> Maybe BT
-  build str [bt1, bt2] = Just (BTNode bt1 bt2)
-  build bt1 bt2 = Nothing
+  build str [] = Just (BTLeaf str)
+  build str [bt0, bt1] = Just $ BTNode bt0 bt1
+  build _ _ = Nothing
+
 
 assertBT =
   children bt == [bt0, bt1]
@@ -102,31 +103,21 @@ class (Eq a) => Lensable a where
   get :: Lens a -> Maybe a
   set :: Lens a -> a -> a
 
--- -- QUESTION 3
+-- QUESTION 3
 instance Lensable BT where
   get :: Lens BT -> Maybe BT
-  get (Lens tree path)= geter path tree
-    where
-      geter [] (BTLeaf s) = Just (BTLeaf s)
-      geter [] (BTNode bt1 bt2) = Nothing
-      geter (x : xs) (BTNode bt1 bt2)
-        | x == 0 = geter xs bt1
-        | x == 1 = geter xs bt2
-        | otherwise = Nothing
-      geter bt1 bt2 = Nothing
+  get (Lens o []) = Just o
+  get (Lens (BTNode bt0 bt1) (0 : ks)) = get (Lens bt0 ks)
+  get (Lens (BTNode bt0 bt1) (1 : ks)) = get (Lens bt1 ks)
+  get _ = Nothing
+
+
 
   set :: Lens BT -> BT -> BT
-  set (Lens tree path) nv = seter path tree
-    where
-      seter [] (BTLeaf str) = nv
-      seter [] (BTNode bt1 bt2) = tree
-      seter (x : xs) (BTNode bt1 bt2)
-        | x == 0 = seter xs bt1
-        | x == 1 = seter xs bt2
-        | otherwise = tree
-      seter bt1 bt2 = tree
-
-
+  set  (Lens _ []) o0 = o0
+  set (Lens (BTNode bt0 bt1) (0 : ks)) o0 = BTNode (set (Lens bt0 ks) o0) bt1
+  set (Lens (BTNode bt0 bt1) (1 : ks)) o0 = BTNode bt0 (set (Lens bt0 ks) o0)
+  set (Lens o _) _ = o
 
 bigBT :: Int -> BT
 bigBT n = bb [0 .. (2 ^ n - 1)]
@@ -151,7 +142,7 @@ assertLensableBTSet =
 -- Does the treeish object have a subtree (possibly the whole tree) that
 -- satisfies the predicate?
 hasSubtree :: (Treeish a) => (a -> Bool) -> a -> Bool
-hasSubtree pred tree = pred tree || any (hasSubtree pred) (children tree)
+hasSubtree p t = p t || any (hasSubtree p) (children t)
 
 assertHasSubtree =
   hasSubtree (== bigBT 1) (bigBT 2)
@@ -159,15 +150,14 @@ assertHasSubtree =
 -- QUESTION 5
 -- The path to the subtree that satisfies the predicate, if any.
 findSubtree :: (Treeish a) => (a -> Bool) -> a -> Maybe Path
-findSubtree pred tree
-  | pred tree = Just []
-  | otherwise = search 0 (children tree)
+findSubtree p t | p t = Just []
+findSubtree p t = go (children t) 0
   where
-    search _ [] = Nothing
-    search idx (x : xs) =
-      case findSubtree pred x of
-        Just subpath -> Just (idx : subpath)
-        Nothing -> search (idx + 1) xs
+    go [] _ = Nothing
+    go (child:rest) idx
+      | p child = Just [idx]
+      | otherwise = fmap (idx :) (findSubtree p child)
+
 
 
 assertFindSubtree =
@@ -228,13 +218,9 @@ skRuleSet =
 -- defined below.
 match :: SK -> SK -> Maybe Subst
 match (Atom x) sk = Just [(x, sk)]
-match (App sk0 sk1) (App sk2 sk3) = do
-  s1 <- match sk0 sk2
-  s2 <- match sk1 sk3
-  combineMatches (Just s1) (Just s2)
-match sk0 sk1
-  | sk0 == sk1 = Just []
-  | otherwise = Nothing
+match (App sk0  sk1) (App sk0' sk1') = combineMatches (match sk0 sk0') (match sk1 sk1')
+match sk0 sk1 | sk0 == sk1 = Just []
+match _ _ = Nothing
 
 assertMatch =
   let x = Atom "x"
@@ -282,17 +268,12 @@ assertApplyRuleSet1 =
 -- Nothing is returned exactly if there is no rule in skRuleSet and no subexpression
 -- (including the whole expression) where the rule application succeeds.
 reduce1 :: SK -> Maybe SK
-reduce1 sk
-  | succeeds (applyRuleSet sk) = applyRuleSet sk
-reduce1 (App sk0 sk1)
-  | succeeds (applyRuleSet sk0) = do
-      sk0' <- applyRuleSet sk0
-      return (App sk0' sk1)
-  | succeeds (applyRuleSet sk1) = do
-      sk1' <- applyRuleSet sk1
-      return (App sk0 sk1')
+reduce1  sk | succeeds (applyRuleSet sk) = applyRuleSet sk
+reduce1 (App sk0 sk1) | succeeds (applyRuleSet sk0) =
+  do sk0' <- applyRuleSet sk0; return (App sk0' sk1)
+reduce1 (App sk0 sk1) | succeeds (applyRuleSet sk1) =
+  do sk1' <- applyRuleSet sk1; return (App sk0 sk1')
 reduce1 _ = Nothing
-
 
 -- Complete reduce an SK expression, i.e. apply reductions anywhere in the
 -- expression until no longer possible.

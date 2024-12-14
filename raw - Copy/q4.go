@@ -150,20 +150,17 @@ func calcEval(c calcEvaluator, ast calcAst) calcValue {
 		push(c, pop(c) - pop(c))
 	case "*":
 		push(c, pop(c) * pop(c))
-	case "/":
+	case"/":
 		push(c, pop(c) / pop(c))
 
-	case "c":
-		calcEvaluatorClear(c)
+
+
+
 	// TODO
 	default:
 		if isDigits(ast.Data()) {
 			v, err := strconv.Atoi(ast.Data())
-			fmt.Print("v: ", v)
 			if err == nil {
-				// TODO
-				// fmt.Print(err)
-				// fmt.Print(v)
 				push(c, float64(v))
 			}
 		}
@@ -202,19 +199,9 @@ func waitABit () {
 
 func player(n int) {
 	// use the following line to print after getting the timer message:
-	fmt.Printf("Player %d is out.\n", n)
+	// fmt.Printf("Player %d is out.\n", n)
 	for {
 		// TODO
-		select{
-
-		case <- courtChan:
-			waitABit()
-			courtChan <- u
-
-		case <- timerChan:
-			fmt.Println("Player %d is out", n)
-			return
-		}
 	}
 }
 
@@ -244,5 +231,5 @@ func play(n int) {
 
 func main() {
 	// Repl(calcInterpreter)
-	play(10)
+	// play(10)
 }
